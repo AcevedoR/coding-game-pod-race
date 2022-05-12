@@ -7,6 +7,9 @@ import com.almasb.fxgl.entity.EntityFactory;
 import com.almasb.fxgl.entity.SpawnData;
 import com.almasb.fxgl.entity.Spawns;
 
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 import javafx.geometry.Point2D;
 import javafx.scene.input.KeyCode;
 import javafx.scene.paint.Color;
@@ -23,6 +26,7 @@ import static com.almasb.fxgl.dsl.FXGLForKtKt.spawn;
 public class BasicGameApp extends GameApplication {
 
     Player playerCodingGame = new Player();
+    List<Entity> checkpoints = new ArrayList<>();
     Entity currentCheckpoint;
     Pod simulation;
 
@@ -38,20 +42,30 @@ public class BasicGameApp extends GameApplication {
         onKeyUp(KeyCode.SPACE, () -> {
             System.out.println("\n ================================================= ");
             Entity player = getGameWorld().getSingleton(EntityType.PLAYER);
-            Entity chekpoint1 = getGameWorld().getSingleton(EntityType.CP1);
-            Entity chekpoint2 = getGameWorld().getSingleton(EntityType.CP2);
 
-            simulation.play(new Point(chekpoint1.getX(), chekpoint1.getY()), 5);
-
-            System.out.println("old angle: " + plus90(player.getRotation()) + " new:" + simulation.angle);
-
+            simulation.play(new Point(currentCheckpoint.getX(), currentCheckpoint.getY()), 5);
             player.setPosition(new Point2D(simulation.position.x, simulation.position.y));
             player.setRotation(minus90(simulation.angle));
             System.err.println("x: " + player.getX() + " y:" + player.getY());
+
+            double distance = new Point(player.getX(), player.getY()).distance(new Point(currentCheckpoint.getX(), currentCheckpoint.getY()));
+            System.out.println("distance to checkpoint: "+distance);
+            if(distance < 20 ){
+                currentCheckpoint = getNextCheckpoint();
+                System.out.println("checkpoint reached, new one: "+currentCheckpoint.toString());
+            }
+
             return Unit.INSTANCE;
         });
     }
-
+    public Entity getNextCheckpoint() {
+        int i = checkpoints.indexOf(currentCheckpoint);
+        if (i + 1 < checkpoints.size()) {
+            return checkpoints.get(i + 1);
+        } else {
+            return checkpoints.get(0);
+        }
+    }
     @Override
     protected void initGame(){
 
@@ -60,9 +74,10 @@ public class BasicGameApp extends GameApplication {
         getGameWorld().addEntityFactory(new SpaceRangerFactory());
 
         spawn("player", 200, 200);
-        spawn("checkpoint1", 400, 400);
-        spawn("checkpoint2", 250, 120);
-        currentCheckpoint = getGameWorld().getSingleton(EntityType.CP1);
+        checkpoints.add(spawn("checkpoint1", 400, 400));
+        checkpoints.add(spawn("checkpoint2", 250, 120));
+        checkpoints.add(spawn("checkpoint3", 500, 300));
+        currentCheckpoint = checkpoints.get(0);
         Entity player = getGameWorld().getSingleton(EntityType.PLAYER);
         player.setRotation(0);
         simulation = Pod.of(player.getX(), player.getY(), 90);
@@ -101,12 +116,23 @@ public class BasicGameApp extends GameApplication {
                     .view(top)
                     .build();
         }
+        @Spawns("checkpoint3")
+        public Entity newCheckpoint3(SpawnData data) {
+            var top = new Circle(10, Color.MAGENTA);
+            top.setStroke(Color.GRAY);
+
+            return entityBuilder(data)
+                    .type(EntityType.CP3)
+                    .view(top)
+                    .build();
+        }
     }
 
     public enum EntityType {
         PLAYER,
         CP1,
-        CP2
+        CP2,
+        CP3
     }
     public static void main(String[] args) {
         launch(args);

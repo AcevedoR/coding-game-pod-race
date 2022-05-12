@@ -21,8 +21,7 @@ public class Player {
     static int slowingTimeAfterCp = 0;
 
     static boolean areCheckpointsInitialized = false;
-    static List<Checkpoint> checkpoints = new ArrayList<>();
-    static Checkpoint currentCheckpoint;
+    static CheckpointsList checkpoints = new CheckpointsList();
 
     public static void main(String args[]) {
         Scanner in = new Scanner(System.in);
@@ -53,9 +52,8 @@ public class Player {
 
 
         // CP
-        if (!areCheckpointsInitialized && checkpoints.stream().noneMatch(cp -> nextCheckpointX == cp.position.x && nextCheckpointY == cp.position.y)) {
-            currentCheckpoint = new Checkpoint(checkpoints.size(), new Point(nextCheckpointX, nextCheckpointY));
-            checkpoints.add(currentCheckpoint);
+        if (!areCheckpointsInitialized && !checkpoints.exists(nextCheckpointX, nextCheckpointY)) {
+            checkpoints.add(new Point(nextCheckpointX, nextCheckpointY));
         } else {
             areCheckpointsInitialized = true;
         }
@@ -64,11 +62,7 @@ public class Player {
         double vy = nextCheckpointY;
 
         if (areCheckpointsInitialized) {
-            Checkpoint nextCheckpoint = getNextCheckpoint();
-//                double offsetX = nextCheckpoint.position.x
 
-//                vx = currentCheckpoint.position.x + offsetX;
-//                vy = currentCheckpoint.position.y + offsetY;
         }
 
 
@@ -111,12 +105,5 @@ public class Player {
         return new Result((int) vx,(int) vy ,thrust);
     }
 
-    static Checkpoint getNextCheckpoint() {
-        int i = currentCheckpoint.id;
-        if (i + 1 < checkpoints.size()) {
-            return checkpoints.get(i + 1);
-        } else {
-            return checkpoints.get(0);
-        }
-    }
+
 }
