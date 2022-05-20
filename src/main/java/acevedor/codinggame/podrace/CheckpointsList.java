@@ -8,18 +8,44 @@ public class CheckpointsList {
     public Checkpoint currentCheckpoint;
 
     public boolean exists(int newx, int newy){
-        return checkpoints.stream().noneMatch(cp -> newx == cp.position.x && newy == cp.position.y);
+        return checkpoints.stream().anyMatch(cp -> newx == cp.position.x && newy == cp.position.y);
     }
     public void add(Point p){
-        checkpoints.add(new Checkpoint(checkpoints.size(), p));
+        currentCheckpoint = new Checkpoint(checkpoints.size(), p);
+        checkpoints.add(currentCheckpoint);
     }
-    public Checkpoint getNextCheckpoint() {
-        int i = currentCheckpoint.id;
-        if (i + 1 < checkpoints.size()) {
-            return checkpoints.get(i + 1);
-        } else {
-            return checkpoints.get(0);
+
+    public int size(){
+        return checkpoints.size();
+    }
+    public boolean isPassingNextCheckpoint(Point p){
+        if(p.distance(currentCheckpoint.position) < 600){// TODO should be 600
+            passToNextCheckpoint();
+            return true;
         }
+        return false;
     }
+
+    @Override
+    public String toString() {
+        return "CheckpointsList{" +
+                "checkpoints=" + checkpoints +
+                ", currentCheckpoint=" + currentCheckpoint +
+                '}';
+    }
+
+    public Checkpoint passToNextCheckpoint() {
+        int i = currentCheckpoint.id;
+        Checkpoint res;
+        if (i + 1 < checkpoints.size()) {
+            res = checkpoints.get(i + 1);
+        } else {
+            res= checkpoints.get(0);
+        }
+        currentCheckpoint = res;
+        return res;
+    }
+
+
 
 }

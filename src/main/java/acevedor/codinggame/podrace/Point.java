@@ -17,6 +17,14 @@ public class Point {
         return (this.x - p.x)*(this.x - p.x) + (this.y - p.y)*(this.y - p.y);
     }
 
+    @Override
+    public String toString() {
+        return "Point{" +
+                "x=" + x +
+                ", y=" + y +
+                '}';
+    }
+
     double distance(Point p) {
         return sqrt(this.distance2(p));
     }

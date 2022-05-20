@@ -1,5 +1,7 @@
 package acevedor.codinggame.podrace;
 
+import java.util.Random;
+
 import static java.lang.Math.PI;
 import static java.lang.Math.acos;
 import static java.lang.Math.ceil;
@@ -17,7 +19,7 @@ public class Pod {
     double angle;
     double vx = 0d;
     double vy = 0d;
-
+    double checkpointPassedCount = 0;
     public static Pod of(double x, double y, double angle){
         Pod p = new Pod();
         p.position = new Point(x, y);
@@ -26,10 +28,15 @@ public class Pod {
     }
 
     void play(Point p, int thrust) {
-        System.out.println("player x:"+position.x + " y:" + position.y);
-        System.out.println("cp x:"+p.x + " y:" + p.y);
         this.rotate(p);
         this.boost(thrust);
+        this.move(1.0d);
+        this.end();
+    }
+
+    void playy(Move m) {
+        this.applyRotation(m);
+        this.boost(m.thrust);
         this.move(1.0d);
         this.end();
     }
@@ -62,7 +69,6 @@ public class Pod {
 
     double diffAngle(Point p) {
         double a = this.getAngle(p);
-        System.err.println("get angle diff: " + a);
 
         // To know whether we should turn clockwise or not we look at the two ways and keep the smallest
         // The ternary operators replace the use of a modulo operator which would be slower
@@ -77,9 +83,26 @@ public class Pod {
         }
     }
 
+    void applyRotation(Move move) {
+        double a = angle + move.angle;
+
+        if (a >= 360.0) {
+            a = a - 360.0;
+        } else if (a < 0.0) {
+            a += 360.0;
+        }
+
+        // Look for a point corresponding to the angle we want
+        // Multiply by 10000.0 to limit rounding errors
+        a = a * PI / 180.0;
+        double px = this.position.x + cos(a) * 10000.0;
+        double py = this.position.y + sin(a) * 10000.0;
+
+        rotate(new Point(px, py));
+    }
+
     void rotate(Point p) {
         double a = this.diffAngle(p);
-        System.err.println("diff angle dir: " + a);
 
         // Can't turn by more than 18° in one turn
         if (a > 18.0) {
@@ -109,12 +132,36 @@ public class Pod {
         // Trigonometry
         this.vx += cos(ra) * thrust;
         this.vy += sin(ra) * thrust;
-        System.err.println("vx: "+vx);
-        System.err.println("vy: "+vy);
     }
     void move(double t) {
         this.position.x += this.vx * t;
         this.position.y += this.vy * t;
+    }
+    void passCheckpoint(){
+        checkpointPassedCount++;
+//        System.err.println("passed checkpoint inc:" + checkpointPassedCount);
+    }
+    double score(Point currentChekpoint) {
+        return checkpointPassedCount * 50000 - this.position.distance(currentChekpoint);
+//        return - this.position.distance(currentChekpoint);
+    }
+
+    Point toResult(Move move) {
+        double a = angle + move.angle;
+
+        if (a >= 360.0) {
+            a = a - 360.0;
+        } else if (a < 0.0) {
+            a += 360.0;
+        }
+
+        // Look for a point corresponding to the angle we want
+        // Multiply by 10000.0 to limit rounding errors
+        a = a * PI / 180.0;
+        double px = this.position.x + cos(a) * 10000.0;
+        double py = this.position.y + sin(a) * 10000.0;
+
+        return new Point(px, py);
     }
 
     public static double truncate(double x) {
@@ -125,5 +172,24 @@ public class Pod {
         } else {
             return ceil(x);
         }
+    }
+
+    public void udpate(final int x, final int y, int nextCheckPointX, int nextCheckpointY, int nextCheckpointAngle) {
+        this.position.x = x;
+        this.position.y = y;
+        this.angle = getAngle(new Point(nextCheckPointX, nextCheckpointY));
+    }
+
+    @Override
+    public String toString() {
+        return "Pod{" +
+                "shield=" + shield +
+                ", timeout=" + timeout +
+                ", position=" + position +
+                ", angle=" + angle +
+                ", vx=" + vx +
+                ", vy=" + vy +
+                ", checkpointPassedCount=" + checkpointPassedCount +
+                '}';
     }
 }
