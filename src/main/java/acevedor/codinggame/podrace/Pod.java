@@ -142,7 +142,7 @@ public class Pod {
 //        System.err.println("passed checkpoint inc:" + checkpointPassedCount);
     }
     double score(Point currentChekpoint) {
-        return checkpointPassedCount * 50000 - this.position.distance(currentChekpoint);
+        return checkpointPassedCount * 50000 - this.position.distance(currentChekpoint) - diffAngle(currentChekpoint);
 //        return - this.position.distance(currentChekpoint);
     }
 

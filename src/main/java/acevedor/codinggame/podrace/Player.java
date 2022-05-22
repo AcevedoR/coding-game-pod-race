@@ -23,12 +23,14 @@ public class Player {
     int firstCheckpointY;
     static int slowingTimeAngle = 0;
     static int slowingTimeAfterCp = 0;
+    int maxThrust = 100;
+
     long startTime;
     public GameState gs = new GameState();
 
     public static Random random =  new Random();
 
-    int amplitube = 7;
+    int amplitube = 18;
     int speedR = 7;
     List<Move> generatedMoves = new ArrayList<>();
 
@@ -123,8 +125,8 @@ public class Player {
     }
 
     private Result moveWithSimulation() {
-        int solutionNumber = 50000;
-        Solutionn[] solutions = generatePopulation(6, solutionNumber);
+        int solutionNumber = 10000;
+        Solutionn[] solutions = generatePopulation(8, solutionNumber);
         Solutionn best = null;
         double maxScore = -9999999;
 
@@ -156,10 +158,10 @@ public class Player {
 
     private Result moveSimply(final int nextCheckpointAngle, final double nextCheckpointDist, final int vx, final int vy) {
         int thrust = 0;
-        if (boostAvailable && (nextCheckpointAngle < 3 && nextCheckpointAngle > -3) && nextCheckpointDist > 5000) {
+        if (boostAvailable && (nextCheckpointAngle < 3 && nextCheckpointAngle > -3) && nextCheckpointDist > 4000) {
             boostAvailable = false;
             System.out.println(vx + " " + vy + " BOOST");
-            return new Result(vx, vy, 10);
+            return new Result(vx, vy, 100);
         } else if (nextCheckpointDist < 2000) {
             thrust = 30;
             if (debug) {
@@ -176,12 +178,21 @@ public class Player {
 //                thrust = 70;
 //                System.err.println("medium");
         } else {
-            thrust = 100;
+            thrust = maxThrust;
             int slowDist = 2000;
             if (nextCheckpointDist < slowDist) {
                 double ratio = (1.0 * (slowDist - nextCheckpointDist)) / slowDist;
                 ratio = Math.pow(ratio, 1);
                 thrust = 60 + (int) (40 * ratio);
+            }
+            if(nextCheckpointAngle > 90) {
+                thrust += (nextCheckpointAngle - 90) * 0.6;
+            }
+            if(thrust > maxThrust){
+                thrust = maxThrust;
+            }
+            if(thrust < 0){
+                thrust = 0;
             }
             if (debug) {
                 System.err.println("fast");
