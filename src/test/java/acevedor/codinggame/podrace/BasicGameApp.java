@@ -55,7 +55,7 @@ public class BasicGameApp extends GameApplication {
         super.onUpdate(tpf);
         if(autoplay){
             try {
-                Thread.sleep(10);
+                Thread.sleep(50);
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
             }
@@ -64,9 +64,13 @@ public class BasicGameApp extends GameApplication {
     }
 
     private Unit play() {
+        playerCodingGame.debug = true;
+        playerCodingGame.solutionNumber = 5;
+        playerCodingGame.init();
         playerCodingGame.startTime = System.currentTimeMillis()+50;
         System.out.println("\n ================================================= ");
         Entity player = getGameWorld().getSingleton(EntityType.PLAYER);
+
 
         Result playResult = playerCodingGame.play(
                 (int) player.getX(),

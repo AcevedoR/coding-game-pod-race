@@ -26,6 +26,12 @@ public class Pod {
         p.angle = angle;
         return p;
     }
+   public static Pod of(double x, double y, double nextCheckpointX, double nextCheckPointY){
+        Pod p = new Pod();
+        p.position = new Point(x, y);
+        p.angle = p.getAngle(new Point(nextCheckpointX, nextCheckPointY));
+        return p;
+    }
 
     void play(Point p, int thrust) {
         this.rotate(p);
@@ -35,17 +41,17 @@ public class Pod {
     }
 
     void playy(Move m) {
-        this.applyRotation(m);
+        angle += m.angle;
         this.boost(m.thrust);
         this.move(1.0d);
         this.end();
     }
 
     void end() {
-        this.position.x = round(this.position.x);
-        this.position.y = round(this.position.y);
-        this.vx = truncate(this.vx * 0.85);
-        this.vy = truncate(this.vy * 0.85);
+        this.position.x = MathUtils.truncate(this.position.x);
+        this.position.y = MathUtils.truncate(this.position.y);
+        this.vx = MathUtils.truncate(this.vx * 0.85);
+        this.vy = MathUtils.truncate(this.vy * 0.85);
 
         // Don't forget that the timeout goes down by 1 each turn. It is reset to 100 when you pass a checkpoint
         this.timeout -= 1;
@@ -67,6 +73,16 @@ public class Pod {
         return a;
     }
 
+   /* public double getAngle(Point p2){
+        double dx = p2.x-this.position.x;
+        double dy = p2.y-this.position.y;
+        double angle = Math.atan2(dy, dx);
+        if (angle < 0) {
+            angle += 360;
+        }
+        return angle;
+    }
+*/
     double diffAngle(Point p) {
         double a = this.getAngle(p);
 
@@ -83,7 +99,7 @@ public class Pod {
         }
     }
 
-    void applyRotation(Move move) {
+  /*  void applyRotation(Move move) {
         double a = angle + move.angle;
 
         if (a >= 360.0) {
@@ -99,7 +115,7 @@ public class Pod {
         double py = this.position.y + sin(a) * 10000.0;
 
         rotate(new Point(px, py));
-    }
+    }*/
 
     void rotate(Point p) {
         double a = this.diffAngle(p);
@@ -142,41 +158,37 @@ public class Pod {
 //        System.err.println("passed checkpoint inc:" + checkpointPassedCount);
     }
     double score(Point currentChekpoint) {
-        return checkpointPassedCount * 50000 - this.position.distance(currentChekpoint) - diffAngle(currentChekpoint);
-//        return - this.position.distance(currentChekpoint);
+        return -this.position.distance(currentChekpoint) + checkpointPassedCount * 50000;
+
+        //        return checkpointPassedCount * 50000 - this.position.distance(currentChekpoint) - diffAngle(currentChekpoint);
     }
 
-    Point toResult(Move move) {
-        double a = angle + move.angle;
-
-        if (a >= 360.0) {
-            a = a - 360.0;
-        } else if (a < 0.0) {
-            a += 360.0;
+    Point toResult() {
+        if (angle >= 360.0) {
+            angle = angle - 360.0;
+        } else if (angle < 0.0) {
+            angle += 360.0;
         }
 
         // Look for a point corresponding to the angle we want
         // Multiply by 10000.0 to limit rounding errors
-        a = a * PI / 180.0;
-        double px = this.position.x + cos(a) * 10000.0;
-        double py = this.position.y + sin(a) * 10000.0;
+        double angledddd = angle * PI / 180.0;
+        double px = this.position.x + cos(angledddd) * 10000.0;
+        double py = this.position.y + sin(angledddd) * 10000.0;
 
         return new Point(px, py);
     }
 
-    public static double truncate(double x) {
-        if (x == 0) {
-            return x;
-        }else if (x > 0) {
-            return floor(x);
-        } else {
-            return ceil(x);
-        }
-    }
-
-    public void udpate(final int x, final int y, int nextCheckPointX, int nextCheckpointY, int nextCheckpointAngle) {
+    public void udpate(final int x, final int y, int nextCheckPointX, int nextCheckpointY, int oldx, int oldy) {
+        System.err.println("update, simu xy: "+position+" real :"+x+ ","+y+" speed:"+vx+","+vy);
+        this.vx=(x - oldx) * 0.85;
+        this.vy= (y - oldy) * 0.85;
         this.position.x = x;
         this.position.y = y;
+
+//        double angle1 = getAngle(new Point(nextCheckPointX, nextCheckpointY));
+//        System.err.println("update, simu angle: "+angle+" real: "+angle1+ " input angle:"+nextCheckpointAngle);
+//        this.angle = nextCheckpointAngle;
         this.angle = getAngle(new Point(nextCheckPointX, nextCheckpointY));
     }
 

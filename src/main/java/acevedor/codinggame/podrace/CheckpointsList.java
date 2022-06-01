@@ -19,7 +19,7 @@ public class CheckpointsList {
         return checkpoints.size();
     }
     public boolean isPassingNextCheckpoint(Point p){
-        if(p.distance(currentCheckpoint.position) < 600){// TODO should be 600
+        if(p.distance(currentCheckpoint.position) < 595){// TODO should be 600
             passToNextCheckpoint();
             return true;
         }

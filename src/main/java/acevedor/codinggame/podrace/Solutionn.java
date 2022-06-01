@@ -42,9 +42,6 @@ public class Solutionn {
 
         // Compute the score
         double result = pod.score(checkpointsList.currentCheckpoint.position);
-        if(false) {
-            System.err.println("solution final: " + this);
-        }
         // Reset everyone to their initial states
         reset();
         return result;
