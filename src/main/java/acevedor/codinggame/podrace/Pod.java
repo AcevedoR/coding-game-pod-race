@@ -172,11 +172,13 @@ public class Pod {
         return new Point(px, py);
     }
 
-    public void udpate(int x, int y, int vx, int vy, int angle, Checkpoint nextCheckpoint) {
+    public void udpate(int x, int y, int  vx, int vy, int angle, Checkpoint nextCheckpoint) {
         System.err.println("simu xy: "+position+" real :"+x+ ","+y+" simuspeed:("+this.vx+","+this.vy+") real:("+vx+","+vy+")");
         System.err.println("simu angle: "+this.angle+" real :"+angle);
-        this.vx=(x - this.position.x) * 0.85;
-        this.vy= (y - this.position.y) * 0.85;
+//        this.vx= (x - this.position.x) * 0.85;
+//        this.vy= (y - this.position.y) * 0.85;
+        this.vx = vx;
+        this.vy = vy;
         this.position.x = x;
         this.position.y = y;
 
