@@ -41,9 +41,9 @@ public class BasicGameApp extends GameApplication {
 
     @Override
     protected void initInput() {
-        onKeyUp(KeyCode.SPACE, () -> {
+        /*onKeyUp(KeyCode.SPACE, () -> {
             return play();
-        });
+        });*/
         onKeyUp(KeyCode.ENTER, () -> {
             autoplay = !autoplay;
             return null;
@@ -59,11 +59,11 @@ public class BasicGameApp extends GameApplication {
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
             }
-            play();
+//            play();
         }
     }
 
-    private Unit play() {
+   /* private Unit play() {
         playerCodingGame.debug = true;
         playerCodingGame.solutionNumber = 5;
         playerCodingGame.init();
@@ -93,7 +93,7 @@ public class BasicGameApp extends GameApplication {
         }
 
         return Unit.INSTANCE;
-    }
+    }*/
 
     public Entity getNextCheckpoint() {
         int i = checkpoints.indexOf(currentCheckpoint);

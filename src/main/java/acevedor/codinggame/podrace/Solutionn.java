@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Solutionn {
-    CheckpointsList checkpointsList;
     Checkpoint initialCurrentCheckpoint;
     Pod pod;
     int timeout;
@@ -16,9 +15,8 @@ public class Solutionn {
     double checkpointPassedCount;
     List<Move> moves1 = new ArrayList<>();
 
-    public Solutionn(CheckpointsList checkpointsList, List<Move> moves1, Pod pod) {
-        this.checkpointsList = checkpointsList;
-        initialCurrentCheckpoint = checkpointsList.currentCheckpoint;
+    public Solutionn(List<Move> moves1, Pod pod) {
+        initialCurrentCheckpoint = pod.currentCheckpoint;
         this.pod = pod;
         timeout = pod.timeout;
         px = pod.position.x;
@@ -35,20 +33,20 @@ public class Solutionn {
         // Apply the moves to the pods before playing
         for (Move move : moves1) {
             pod.playy(move);
-            if (checkpointsList.isPassingNextCheckpoint(pod.position)) {
+            if (pod.checkNewCPAndUpdate(pod.position)) {
                 pod.passCheckpoint();
             }
         }
 
         // Compute the score
-        double result = pod.score(checkpointsList.currentCheckpoint.position);
+        double result = pod.score();
         // Reset everyone to their initial states
         reset();
         return result;
     }
 
     void reset() {
-        checkpointsList.currentCheckpoint = initialCurrentCheckpoint;
+        pod.currentCheckpoint = initialCurrentCheckpoint;
         pod.timeout = timeout;
         pod.position.x = px;
         pod.position.y = py;
@@ -61,7 +59,6 @@ public class Solutionn {
     @Override
     public String toString() {
         return "Solution{" +
-                "checkpointsList=" + checkpointsList +
                 ", initialCurrentCheckpoint=" + initialCurrentCheckpoint +
                 ", pod=" + pod +
                 ", timeout=" + timeout +

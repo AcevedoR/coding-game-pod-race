@@ -18,7 +18,7 @@ public class PlayerTest {
         player.solutionNumber = 30;
         player.init();
     }
-    @Test
+  /*  @Test
     public void play_ok_first_turn() {
 
         Result result = player.play(500, 500, 1000, 500, 0);
@@ -98,7 +98,7 @@ public class PlayerTest {
                 .isEqualTo(-162);
         assertThat(MathUtils.truncate(pod.vy))
                 .isEqualTo(143);
-    }
+    }*/
     //4162,6913  450 77
 //    4692,7005
 }

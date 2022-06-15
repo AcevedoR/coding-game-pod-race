@@ -1,12 +1,8 @@
 package acevedor.codinggame.podrace;
 
-import java.util.Random;
-
 import static java.lang.Math.PI;
 import static java.lang.Math.acos;
-import static java.lang.Math.ceil;
 import static java.lang.Math.cos;
-import static java.lang.Math.floor;
 import static java.lang.Math.round;
 import static java.lang.Math.sin;
 
@@ -15,21 +11,23 @@ public class Pod {
     boolean shield = false;
     int timeout = 100;
 
-    Point position;
+    Point position = new Point(0, 0);
     double angle;
     double vx = 0d;
     double vy = 0d;
     double checkpointPassedCount = 0;
+    Checkpoint currentCheckpoint;
+
     public static Pod of(double x, double y, double angle){
         Pod p = new Pod();
         p.position = new Point(x, y);
         p.angle = angle;
         return p;
     }
-   public static Pod of(double x, double y, double nextCheckpointX, double nextCheckPointY){
+   public static Pod of(double x, double y, double angle, Checkpoint currentCheckpoint){
         Pod p = new Pod();
         p.position = new Point(x, y);
-        p.angle = p.getAngle(new Point(nextCheckpointX, nextCheckPointY));
+        p.angle = angle;
         return p;
     }
 
@@ -157,8 +155,8 @@ public class Pod {
         checkpointPassedCount++;
 //        System.err.println("passed checkpoint inc:" + checkpointPassedCount);
     }
-    double score(Point currentChekpoint) {
-        return -this.position.distance(currentChekpoint) + checkpointPassedCount * 50000;
+    double score() {
+        return -this.position.distance(currentCheckpoint.position) + checkpointPassedCount * 50000;
 
         //        return checkpointPassedCount * 50000 - this.position.distance(currentChekpoint) - diffAngle(currentChekpoint);
     }
@@ -179,17 +177,26 @@ public class Pod {
         return new Point(px, py);
     }
 
-    public void udpate(final int x, final int y, int nextCheckPointX, int nextCheckpointY, int oldx, int oldy) {
+    public void udpate(int x, int y, int vx, int vy, int angle, Checkpoint nextCheckpoint) {
         System.err.println("update, simu xy: "+position+" real :"+x+ ","+y+" speed:"+vx+","+vy);
-        this.vx=(x - oldx) * 0.85;
-        this.vy= (y - oldy) * 0.85;
+        this.vx=(x - this.position.x) * 0.85;
+        this.vy= (y - this.position.y) * 0.85;
         this.position.x = x;
         this.position.y = y;
 
+        this.currentCheckpoint = nextCheckpoint;
 //        double angle1 = getAngle(new Point(nextCheckPointX, nextCheckpointY));
 //        System.err.println("update, simu angle: "+angle+" real: "+angle1+ " input angle:"+nextCheckpointAngle);
 //        this.angle = nextCheckpointAngle;
-        this.angle = getAngle(new Point(nextCheckPointX, nextCheckpointY));
+        this.angle = angle;
+    }
+
+    public boolean checkNewCPAndUpdate(Point p){
+        if(p.distance(currentCheckpoint.position) < 599){// TODO should be 600
+            currentCheckpoint = GameState.checkpointsList.next(currentCheckpoint);
+            return true;
+        }
+        return false;
     }
 
     @Override
