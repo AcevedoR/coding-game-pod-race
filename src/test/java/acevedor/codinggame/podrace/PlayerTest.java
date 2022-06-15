@@ -18,6 +18,44 @@ public class PlayerTest {
         player.solutionNumber = 30;
         player.init();
     }
+
+    @Test
+    public void play_ok_with_checkpoint_initialized() {
+        GameState.checkpointsList.add(new Checkpoint(0, new Point(1000, 500)));
+        player.startTime = System.currentTimeMillis();
+        player.isTesting = true;
+        player.depth = 1;
+        player.generatedMoves = List.of(
+                new Move(0, 0),
+                new Move(0, 80),
+                new Move(18, 80),
+                new Move(-18, 80)
+        );
+
+        player.applyInput(
+                500, 500, 0, 0, 0, 0,
+                200, 500, 0, 0, 0, 0
+                );
+        player.play();
+
+        assertThat(player.pod1.position.x)
+                .isGreaterThan(500);
+        assertThat(player.pod1.position.y)
+                .isEqualTo(500);
+        assertThat(player.pod1.vx)
+                .isEqualTo(80*0.85);
+        assertThat(player.pod1.vy)
+                .isEqualTo(0);
+
+        assertThat(player.pod1.position.x)
+                .isGreaterThan(200);
+        assertThat(player.pod1.position.y)
+                .isEqualTo(500);
+        assertThat(player.pod1.vx)
+                .isEqualTo(80*0.85);
+        assertThat(player.pod1.vy)
+                .isEqualTo(0);
+    }
   /*  @Test
     public void play_ok_first_turn() {
 
@@ -31,27 +69,7 @@ public class PlayerTest {
                 .isGreaterThan(0);
     }
 
-    @Test
-    public void play_ok_with_checkpoint_initialized() {
-        player.gs.checkpointsList.add(new Point(1000, 500));
-        player.gs.areCheckpointsInitialized = true;
-        player.startTime = System.currentTimeMillis();
-        player.generatedMoves = List.of(
-                new Move(0, 2),
-                new Move(0, 80),
-                new Move(18, 80),
-                new Move(-18, 80)
-        );
 
-        Result result = player.play(500, 500, 1000, 500, 0);
-
-        assertThat(result.x)
-                .isGreaterThan(500);
-        assertThat(result.y)
-                .isEqualTo(500);
-        assertThat(result.thrust)
-                .isGreaterThanOrEqualTo(80);
-    }
 //    @ParameterizedTest
 //    @ValueSource(doubles = {-2222, -500, -19, -18, -10, -5, -1, 0, 1, 3, 8, 17, 18, 19, 300, 1000})
     @Test

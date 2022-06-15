@@ -117,7 +117,7 @@ public class BasicGameApp extends GameApplication {
         currentCheckpoint = checkpoints.get(0);
         Entity player = getGameWorld().getSingleton(EntityType.PLAYER);
         player.setRotation(90);
-        simulation = Pod.of(player.getX(), player.getY(), 0);
+//        simulation = Pod.of(player.getX(), player.getY(), 0);
     }
     public static class SpaceRangerFactory implements EntityFactory {
         @Spawns("player")

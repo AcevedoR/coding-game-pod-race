@@ -12,6 +12,7 @@ import java.util.Scanner;
  **/
 public class Player {
 
+    boolean isTesting = false;
     boolean debug=false;
     boolean boostAvailable = true;
     int turn = 1;
@@ -20,7 +21,8 @@ public class Player {
     int oldx;
     int oldy;
     int maxThrust = 100;
-    int solutionNumber = 10000;
+    int depth = 3;
+    int solutionNumber = 15000;
     long startTime;
     public static Random random =  new Random();
 
@@ -64,10 +66,12 @@ public class Player {
                 int eeeeangle2 = in.nextInt(); // angle of the opponent's pod
                 int eeeenextCheckPointId2 = in.nextInt(); // next check point id of the opponent's pod
             }
-            player.play(
-            x1, y1, vx1, vy1, angle1, nextCheckPointId1,
-            x2, y2, vx2, vy2, angle2, nextCheckPointId2
+
+            player.applyInput(
+                x1, y1, vx1, vy1, angle1, nextCheckPointId1,
+                x2, y2, vx2, vy2, angle2, nextCheckPointId2
             );
+            player.play();
         }
     }
 
@@ -99,19 +103,21 @@ public class Player {
         }
     }
 
-    void play(
+    void applyInput(
             int x1, int y1, int vx1, int vy1, int angle1, int nextCheckPointId1,
             int x2, int y2, int vx2, int vy2, int angle2, int nextCheckPointId2
     ) {
         // PLAY
         if (turn == 1) {
-            pod1 = new Pod();
-            pod2 = new Pod();
-        }
+            pod1 = new Pod(x1, y1, vx1, vy1, angle1, GameState.checkpointsList.get(nextCheckPointId1));
+            pod2 = new Pod(x2, y2, vx2, vy2, angle2, GameState.checkpointsList.get(nextCheckPointId2));
+        }          
         pod1.udpate(x1, y1, vx1, vy1, angle1, GameState.checkpointsList.get(nextCheckPointId1));
         pod2.udpate(x2, y2, vx2, vy2, angle2, GameState.checkpointsList.get(nextCheckPointId2));
+    }
 
-        if(turn==1) {
+    void play(){
+        if(turn==1 && !isTesting) {
             System.out.println((int) pod1.currentCheckpoint.position.x + " " + (int) pod1.currentCheckpoint.position.y + " BOOST");
             System.out.println((int) pod2.currentCheckpoint.position.x + " " + (int) pod2.currentCheckpoint.position.y + " BOOST");
             turn++;
@@ -121,10 +127,9 @@ public class Player {
             moveWithSimulation();
         }
     }
-
     private void moveWithSimulation() {
-        Solutionn[] solutions = generatePopulation(3, solutionNumber, pod1);
-        Solutionn[] solutions2 = generatePopulation(3, solutionNumber, pod2);
+        Solutionn[] solutions = generatePopulation(depth, solutionNumber, pod1);
+        Solutionn[] solutions2 = generatePopulation(depth, solutionNumber, pod2);
         Solutionn best = null;
         Solutionn best2 = null;
         double maxScore = -9999999;
@@ -150,6 +155,7 @@ public class Player {
         System.err.println("time: "+ ( System.currentTimeMillis() - startTime));
         pod1.playy(best.moves1.get(0));
         pod2.playy(best2.moves1.get(0));
+        System.err.println("moving:"+best.moves1.get(0));
         System.err.println("x:" + pod1.position.x + " y:" + pod1.position.y + " vx:" +pod1.vx + " vy:" +pod1.vy+ " angle" + pod1.angle);
         Point res = pod1.toResult();
         Point res2 = pod2.toResult();

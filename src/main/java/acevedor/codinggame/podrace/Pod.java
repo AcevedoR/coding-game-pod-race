@@ -18,17 +18,13 @@ public class Pod {
     double checkpointPassedCount = 0;
     Checkpoint currentCheckpoint;
 
-    public static Pod of(double x, double y, double angle){
-        Pod p = new Pod();
-        p.position = new Point(x, y);
-        p.angle = angle;
-        return p;
-    }
-   public static Pod of(double x, double y, double angle, Checkpoint currentCheckpoint){
-        Pod p = new Pod();
-        p.position = new Point(x, y);
-        p.angle = angle;
-        return p;
+    public Pod(int x, int y, int vx, int vy, int angle, Checkpoint nextCheckpoint){
+        this.position.x = x;
+        this.position.y = y;
+        this.vx = vx;
+        this.vy = vy;
+        this.angle = angle;
+        this.currentCheckpoint = nextCheckpoint;
     }
 
     void play(Point p, int thrust) {
@@ -156,9 +152,8 @@ public class Pod {
 //        System.err.println("passed checkpoint inc:" + checkpointPassedCount);
     }
     double score() {
-        return -this.position.distance(currentCheckpoint.position) + checkpointPassedCount * 50000;
-
-        //        return checkpointPassedCount * 50000 - this.position.distance(currentChekpoint) - diffAngle(currentChekpoint);
+//        return -this.position.distance(currentCheckpoint.position) + checkpointPassedCount * 50000;
+        return checkpointPassedCount * 50000 - this.position.distance(currentCheckpoint.position) - Math.abs(diffAngle(currentCheckpoint.position));
     }
 
     Point toResult() {
@@ -178,7 +173,8 @@ public class Pod {
     }
 
     public void udpate(int x, int y, int vx, int vy, int angle, Checkpoint nextCheckpoint) {
-        System.err.println("update, simu xy: "+position+" real :"+x+ ","+y+" speed:"+vx+","+vy);
+        System.err.println("simu xy: "+position+" real :"+x+ ","+y+" simuspeed:("+this.vx+","+this.vy+") real:("+vx+","+vy+")");
+        System.err.println("simu angle: "+this.angle+" real :"+angle);
         this.vx=(x - this.position.x) * 0.85;
         this.vy= (y - this.position.y) * 0.85;
         this.position.x = x;
