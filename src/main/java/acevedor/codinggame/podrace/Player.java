@@ -2,8 +2,8 @@ package acevedor.codinggame.podrace;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 import java.util.Scanner;
+import java.util.concurrent.ThreadLocalRandom;
 
 
 /**
@@ -14,6 +14,7 @@ public class Player {
 
     boolean isTesting = false;
     boolean debug=false;
+    boolean isLoggingPerfs = true;
     boolean boostAvailable = true;
     int turn = 1;
     Pod pod2;
@@ -21,10 +22,9 @@ public class Player {
     int oldx;
     int oldy;
     int maxThrust = 100;
-    int depth = 3;
-    int solutionNumber = 15000;
+    int depth = 5;
+    int solutionNumber = 20000;
     long startTime;
-    public static Random random =  new Random();
 
     int amplitube = 18;
     int speedR = 7;
@@ -119,7 +119,7 @@ public class Player {
     void play(){
         if(turn==1 && !isTesting) {
             System.out.println((int) pod1.currentCheckpoint.position.x + " " + (int) pod1.currentCheckpoint.position.y + " BOOST");
-            System.out.println((int) pod2.currentCheckpoint.position.x + " " + (int) pod2.currentCheckpoint.position.y + " BOOST");
+            System.out.println((int) pod2.currentCheckpoint.position.x + " " + (int) pod2.currentCheckpoint.position.y + " 100");
             turn++;
 
         } else {
@@ -128,17 +128,26 @@ public class Player {
         }
     }
     private void moveWithSimulation() {
+        long solutionsGenerationTime = System.currentTimeMillis();
         Solutionn[] solutions = generatePopulation(depth, solutionNumber, pod1);
         Solutionn[] solutions2 = generatePopulation(depth, solutionNumber, pod2);
+        if(isLoggingPerfs) {
+            System.err.println("solutions generation duration: " + (System.currentTimeMillis() - solutionsGenerationTime));
+        }
         Solutionn best = null;
         Solutionn best2 = null;
         double maxScore = -9999999;
         double maxScore2 = -9999999;
         System.err.println("x:" + pod1.position.x + " y:" + pod1.position.y + " vx:" +pod1.vx + " vy:" +pod1.vy+ " angle" + pod1.angle);
 
+        long lastLoopTime = System.currentTimeMillis();
         for (int i = 0; i < solutionNumber; i++) {
-            if(System.currentTimeMillis() - startTime > 74){
-                System.err.println("Breaked out of simulation loop at index: " + i);
+            long lastLoopDuration = System.currentTimeMillis() - lastLoopTime;
+            if(System.currentTimeMillis() + lastLoopDuration - startTime > 73){
+                if(isLoggingPerfs) {
+                    System.err.println("loop time: " + lastLoopDuration);
+                    System.err.println("Breaked out of simulation loop at index: " + i);
+                }
                 break;
             }
             double score = solutions[i].score();
@@ -151,6 +160,7 @@ public class Player {
                 best2 = solutions2[i];
                 maxScore2 = score2;
             }
+            lastLoopTime = System.currentTimeMillis();
         }
         System.err.println("time: "+ ( System.currentTimeMillis() - startTime));
         pod1.playy(best.moves1.get(0));
@@ -195,7 +205,7 @@ public class Player {
         return solutions;
     }
     int rrandom(int min, int max) {
-        return random.nextInt(max - min) + min;
+        return ThreadLocalRandom.current().nextInt(max - min) + min;
     }
 
 }

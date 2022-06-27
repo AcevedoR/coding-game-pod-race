@@ -1,6 +1,6 @@
 package acevedor.codinggame.podrace;
 
-import java.util.Random;
+import java.util.concurrent.ThreadLocalRandom;
 
 public class Move {
     double angle; // Between -18.0 and +18.0
@@ -42,7 +42,7 @@ public class Move {
     }
 
     double random(double min, double max) {
-        return min + (max - min) * Player.random.nextDouble();
+        return min + (max - min) * ThreadLocalRandom.current().nextDouble();
     }
 
     @Override
