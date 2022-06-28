@@ -56,6 +56,30 @@ public class PlayerTest {
         assertThat(player.pod1.vy)
                 .isEqualTo(0);
     }
+
+    @Test
+    public void moves_generated() {
+        GameState.checkpointsList.add(new Checkpoint(0, new Point(1000, 500)));
+        player.startTime = System.currentTimeMillis();
+        player.isTesting = true;
+        player.depth = 1;
+        player.generatedMoves = List.of(
+                new Move(0, 0),
+                new Move(0, 80),
+                new Move(18, 80),
+                new Move(-18, 80)
+        );
+
+        player.applyInput(
+                500, 500, 0, 0, 0, 0,
+                200, 500, 0, 0, 0, 0
+        );
+        player.play();
+
+        player.init();
+        assertThat(player.generatedMoves)
+                .hasSize(player.amplitube * player.speedR + player.amplitube + player.speedR +1);
+    }
   /*  @Test
     public void play_ok_first_turn() {
 

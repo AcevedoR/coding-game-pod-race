@@ -1,0 +1,671 @@
+/*
+Proudly built by org.ndx.codingame.simpleclass.Assembler on 2022-06-27T13:24:07.231+02:00[Europe/Paris]
+@see https://github.com/Riduidel/codingame/tree/master/tooling/codingame-simpleclass-maven-plugin
+*/
+import static java.lang.Math.PI;
+import static java.lang.Math.acos;
+import static java.lang.Math.sqrt;
+import java.lang.Math;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.ThreadLocalRandom;
+import static java.lang.Math.ceil;
+import static java.lang.Math.floor;
+import static java.lang.Math.cos;
+import static java.lang.Math.round;
+import static java.lang.Math.sin;
+import java.util.Scanner;
+
+class Point {
+
+    double x;
+
+    double y;
+
+    public Point(final double x, final double y) {
+        this.x = x;
+        this.y = y;
+    }
+
+    double distance2(Point p) {
+        return (this.x - p.x) * (this.x - p.x) + (this.y - p.y) * (this.y - p.y);
+    }
+
+    @Override
+    public String toString() {
+        return "Point{" + "x=" + x + ", y=" + y + '}';
+    }
+
+    double distance(Point p) {
+        return sqrt(this.distance2(p));
+    }
+}
+
+class Checkpoint {
+
+    int id;
+
+    Point position;
+
+    @Override
+    public String toString() {
+        return "Checkpoint{" + "  id=" + id + ", position=" + position + '}';
+    }
+
+    public Checkpoint(final int id, final Point position) {
+        this.id = id;
+        this.position = position;
+    }
+}
+
+class CheckpointsList {
+
+    private List<Checkpoint> checkpoints = new ArrayList<>();
+
+    public boolean exists(int newx, int newy) {
+        return checkpoints.stream().anyMatch( cp -> newx == cp.position.x && newy == cp.position.y);
+    }
+
+    public void add(Checkpoint c) {
+        checkpoints.add(c);
+    }
+
+    public Checkpoint get(int i) {
+        return checkpoints.get(i);
+    }
+
+    public int size() {
+        return checkpoints.size();
+    }
+
+    @Override
+    public String toString() {
+        return "CheckpointsList{" + "checkpoints=" + checkpoints + '}';
+    }
+
+    public Checkpoint next(final Checkpoint currentCheckpoint) {
+        if (currentCheckpoint.id + 1 >= checkpoints.size()) {
+            return checkpoints.get(0);
+        } else {
+            return checkpoints.get(currentCheckpoint.id + 1);
+        }
+    }
+}
+
+class GameState {
+
+    public static CheckpointsList checkpointsList = new CheckpointsList();
+
+    public void toto() {
+    }
+}
+
+class Move {
+
+    // Between -18.0 and +18.0
+    double angle;
+
+    // Between -1 and 200
+    int thrust;
+
+    public Move(final double angle, final int thrust) {
+        this.angle = angle;
+        this.thrust = thrust;
+    }
+
+    void mutate(double amplitude) {
+        double ramin = this.angle - 36.0 * amplitude;
+        double ramax = this.angle + 36.0 * amplitude;
+        if (ramin < -18.0) {
+            ramin = -18.0;
+        }
+        if (ramax > 18.0) {
+            ramax = 18.0;
+        }
+        angle = random(ramin, ramax);
+        int pmin = (int) (this.thrust - 200 * amplitude);
+        int pmax = (int) (this.thrust + 200 * amplitude);
+        if (pmin < 0) {
+            pmin = 0;
+        }
+        if (pmax > 0) {
+            pmax = 200;
+        }
+        this.thrust = (int) random(pmin, pmax);
+    }
+
+    double random(double min, double max) {
+        return min + (max - min) * ThreadLocalRandom.current().nextDouble();
+    }
+
+    @Override
+    public String toString() {
+        return "Move{" + "angle=" + angle + ", thrust=" + thrust + '}';
+    }
+
+    public double getAngle() {
+        return angle;
+    }
+
+    public void setAngle(final double angle) {
+        this.angle = angle;
+    }
+
+    public int getThrust() {
+        return thrust;
+    }
+
+    public void setThrust(final int thrust) {
+        this.thrust = thrust;
+    }
+}
+
+class MathUtils {
+
+    public static double truncate(double d) {
+        if (d == 0) {
+            return d;
+        } else if (d > 0) {
+            return floor(d);
+        } else {
+            return ceil(d);
+        }
+    }
+}
+
+class Pod {
+
+    boolean shield = false;
+
+    int timeout = 100;
+
+    Point position = new Point(0, 0);
+
+    double angle;
+
+    double vx = 0d;
+
+    double vy = 0d;
+
+    double checkpointPassedCount = 0;
+
+    Checkpoint currentCheckpoint;
+
+    public Pod(int x, int y, int vx, int vy, int angle, Checkpoint nextCheckpoint) {
+        this.position.x = x;
+        this.position.y = y;
+        this.vx = vx;
+        this.vy = vy;
+        this.angle = angle;
+        this.currentCheckpoint = nextCheckpoint;
+    }
+
+    void play(Point p, int thrust) {
+        this.rotate(p);
+        this.boost(thrust);
+        this.move(1.0d);
+        this.end();
+    }
+
+    void playy(Move m) {
+        angle += m.angle;
+        this.boost(m.thrust);
+        this.move(1.0d);
+        this.end();
+    }
+
+    void end() {
+        this.position.x = MathUtils.truncate(this.position.x);
+        this.position.y = MathUtils.truncate(this.position.y);
+        this.vx = MathUtils.truncate(this.vx * 0.85);
+        this.vy = MathUtils.truncate(this.vy * 0.85);
+        // Don't forget that the timeout goes down by 1 each turn. It is reset to 100 when you pass a checkpoint
+        this.timeout -= 1;
+    }
+
+    double getAngle(Point p) {
+        double d = this.position.distance(p);
+        double dx = (p.x - this.position.x) / d;
+        double dy = (p.y - this.position.y) / d;
+        // Simple trigonometry. We multiply by 180.0 / PI to convert radiants to degrees.
+        double a = acos(dx) * 180.0 / PI;
+        // If the point I want is below me, I have to shift the angle for it to be correct
+        if (dy < 0) {
+            a = 360.0 - a;
+        }
+        return a;
+    }
+
+    /* public double getAngle(Point p2){
+        double dx = p2.x-this.position.x;
+        double dy = p2.y-this.position.y;
+        double angle = Math.atan2(dy, dx);
+        if (angle < 0) {
+            angle += 360;
+        }
+        return angle;
+    }
+*/
+    double diffAngle(Point p) {
+        double a = this.getAngle(p);
+        // To know whether we should turn clockwise or not we look at the two ways and keep the smallest
+        // The ternary operators replace the use of a modulo operator which would be slower
+        double right = this.angle <= a ? a - this.angle : 360.0 - this.angle + a;
+        double left = this.angle >= a ? this.angle - a : this.angle + 360.0 - a;
+        if (right < left) {
+            return right;
+        } else {
+            // We return a negative angle if we must rotate to left
+            return -left;
+        }
+    }
+
+    /*  void applyRotation(Move move) {
+        double a = angle + move.angle;
+
+        if (a >= 360.0) {
+            a = a - 360.0;
+        } else if (a < 0.0) {
+            a += 360.0;
+        }
+
+        // Look for a point corresponding to the angle we want
+        // Multiply by 10000.0 to limit rounding errors
+        a = a * PI / 180.0;
+        double px = this.position.x + cos(a) * 10000.0;
+        double py = this.position.y + sin(a) * 10000.0;
+
+        rotate(new Point(px, py));
+    }*/
+    void rotate(Point p) {
+        double a = this.diffAngle(p);
+        // Can't turn by more than 18° in one turn
+        if (a > 18.0) {
+            a = 18.0;
+        } else if (a < -18.0) {
+            a = -18.0;
+        }
+        this.angle += a;
+        // The % operator is slow. If we can avoid it, it's better.
+        if (this.angle >= 360.0) {
+            this.angle = this.angle - 360.0;
+        } else if (this.angle < 0.0) {
+            this.angle += 360.0;
+        }
+    }
+
+    void boost(int thrust) {
+        // Don't forget that a pod which has activated its shield cannot accelerate for 3 turns
+        if (this.shield) {
+            return;
+        }
+        // Conversion of the angle to radiants
+        double ra = this.angle * PI / 180.0;
+        // Trigonometry
+        this.vx += cos(ra) * thrust;
+        this.vy += sin(ra) * thrust;
+    }
+
+    void move(double t) {
+        this.position.x += this.vx * t;
+        this.position.y += this.vy * t;
+    }
+
+    void passCheckpoint() {
+        checkpointPassedCount++;
+        //        System.err.println("passed checkpoint inc:" + checkpointPassedCount);
+    }
+
+    double score() {
+        //        return -this.position.distance(currentCheckpoint.position) + checkpointPassedCount * 50000;
+        return checkpointPassedCount * 50000 - this.position.distance(currentCheckpoint.position) - Math.abs(diffAngle(currentCheckpoint.position));
+    }
+
+    Point toResult() {
+        if (angle >= 360.0) {
+            angle = angle - 360.0;
+        } else if (angle < 0.0) {
+            angle += 360.0;
+        }
+        // Look for a point corresponding to the angle we want
+        // Multiply by 10000.0 to limit rounding errors
+        double angledddd = angle * PI / 180.0;
+        double px = this.position.x + cos(angledddd) * 10000.0;
+        double py = this.position.y + sin(angledddd) * 10000.0;
+        return new Point(px, py);
+    }
+
+    public void udpate(int x, int y, int vx, int vy, int angle, Checkpoint nextCheckpoint) {
+        System.err.println("simu xy: " + position + " real :" + x + "," + y + " simuspeed:(" + this.vx + "," + this.vy + ") real:(" + vx + "," + vy + ")");
+        System.err.println("simu angle: " + this.angle + " real :" + angle);
+        //        this.vx= (x - this.position.x) * 0.85;
+        //        this.vy= (y - this.position.y) * 0.85;
+        this.vx = vx;
+        this.vy = vy;
+        this.position.x = x;
+        this.position.y = y;
+        this.currentCheckpoint = nextCheckpoint;
+        //        double angle1 = getAngle(new Point(nextCheckPointX, nextCheckpointY));
+        //        System.err.println("update, simu angle: "+angle+" real: "+angle1+ " input angle:"+nextCheckpointAngle);
+        //        this.angle = nextCheckpointAngle;
+        this.angle = angle;
+    }
+
+    public boolean checkNewCPAndUpdate(Point p) {
+        if (p.distance(currentCheckpoint.position) < 599) {
+            // TODO should be 600
+            currentCheckpoint = GameState.checkpointsList.next(currentCheckpoint);
+            return true;
+        }
+        return false;
+    }
+
+    @Override
+    public String toString() {
+        return "Pod{" + "shield=" + shield + ", timeout=" + timeout + ", position=" + position + ", angle=" + angle + ", vx=" + vx + ", vy=" + vy + ", checkpointPassedCount=" + checkpointPassedCount + '}';
+    }
+}
+
+class Result {
+
+    int x;
+
+    int y;
+
+    int thrust;
+
+    public Result(final int x, final int y, final int thrust) {
+        this.x = x;
+        this.y = y;
+        this.thrust = thrust;
+    }
+}
+
+class Solutionn {
+
+    Checkpoint initialCurrentCheckpoint;
+
+    Pod pod;
+
+    int timeout;
+
+    double px;
+
+    double py;
+
+    double angle;
+
+    double vx;
+
+    double vy;
+
+    double checkpointPassedCount;
+
+    List<Move> moves1 = new ArrayList<>();
+
+    public Solutionn(List<Move> moves1, Pod pod) {
+        initialCurrentCheckpoint = pod.currentCheckpoint;
+        this.pod = pod;
+        timeout = pod.timeout;
+        px = pod.position.x;
+        py = pod.position.y;
+        angle = pod.angle;
+        vx = pod.vx;
+        vy = pod.vy;
+        checkpointPassedCount = pod.checkpointPassedCount;
+        this.moves1 = moves1;
+    }
+
+    double score() {
+        // Apply the moves to the pods before playing
+        for (Move move : moves1) {
+            pod.playy(move);
+            if (pod.checkNewCPAndUpdate(pod.position)) {
+                pod.passCheckpoint();
+            }
+        }
+        // Compute the score
+        double result = pod.score();
+        // Reset everyone to their initial states
+        reset();
+        return result;
+    }
+
+    void reset() {
+        pod.currentCheckpoint = initialCurrentCheckpoint;
+        pod.timeout = timeout;
+        pod.position.x = px;
+        pod.position.y = py;
+        pod.angle = angle;
+        pod.vx = vx;
+        pod.vy = vy;
+        pod.checkpointPassedCount = checkpointPassedCount;
+    }
+
+    @Override
+    public String toString() {
+        return "Solution{" + ", initialCurrentCheckpoint=" + initialCurrentCheckpoint + ", pod=" + pod + ", timeout=" + timeout + ", px=" + px + ", py=" + py + ", angle=" + angle + ", vx=" + vx + ", vy=" + vy + ", checkpointPassedCount=" + checkpointPassedCount + ", moves1=" + moves1 + '}';
+    }
+}
+
+/**
+ * Auto-generated code below aims at helping you parse
+ * the standard input according to the problem statement.
+ **/
+/**
+ * Auto-generated code below aims at helping you parse
+ * the standard input according to the problem statement.
+ **/
+class Player {
+
+    boolean isTesting = false;
+
+    boolean debug = false;
+
+    boolean isLoggingPerfs = true;
+
+    boolean boostAvailable = true;
+
+    int turn = 1;
+
+    Pod pod2;
+
+    Pod pod1;
+
+    int oldx;
+
+    int oldy;
+
+    int maxThrust = 100;
+
+    int depth = 5;
+
+    int solutionNumber = 20000;
+
+    long startTime;
+
+    int amplitube = 18;
+
+    int speedR = 7;
+
+    List<Move> generatedMoves = new ArrayList<>();
+
+    public static void main(String args[]) {
+        Player player = new Player();
+        player.init();
+        Scanner in = new Scanner(System.in);
+        int laps = in.nextInt();
+        int checkpointCount = in.nextInt();
+        for (int i = 0; i < checkpointCount; i++) {
+            int checkpointX = in.nextInt();
+            int checkpointY = in.nextInt();
+            GameState.checkpointsList.add(new Checkpoint(i, new Point(checkpointX, checkpointY)));
+        }
+        // game loop
+        while (true) {
+            // x position of your pod
+            int x1 = in.nextInt();
+            player.startTime = System.currentTimeMillis();
+            // y position of your pod
+            int y1 = in.nextInt();
+            // x speed of your pod
+            int vx1 = in.nextInt();
+            // y speed of your pod
+            int vy1 = in.nextInt();
+            // angle of your pod
+            int angle1 = in.nextInt();
+            // next check point id of your pod
+            int nextCheckPointId1 = in.nextInt();
+            // x position of your pod
+            int x2 = in.nextInt();
+            // y position of your pod
+            int y2 = in.nextInt();
+            // x speed of your pod
+            int vx2 = in.nextInt();
+            // y speed of your pod
+            int vy2 = in.nextInt();
+            // angle of your pod
+            int angle2 = in.nextInt();
+            // next check point id of your pod
+            int nextCheckPointId2 = in.nextInt();
+            for (int i = 0; i < 2; i++) {
+                // x position of the opponent's pod
+                int eeeex2 = in.nextInt();
+                // y position of the opponent's pod
+                int eeeey2 = in.nextInt();
+                // x speed of the opponent's pod
+                int eeeevx2 = in.nextInt();
+                // y speed of the opponent's pod
+                int eeeevy2 = in.nextInt();
+                // angle of the opponent's pod
+                int eeeeangle2 = in.nextInt();
+                // next check point id of the opponent's pod
+                int eeeenextCheckPointId2 = in.nextInt();
+            }
+            player.applyInput(x1, y1, vx1, vy1, angle1, nextCheckPointId1, x2, y2, vx2, vy2, angle2, nextCheckPointId2);
+            player.play();
+        }
+    }
+
+    public void init() {
+        double aInc = 36 / amplitube;
+        double speedInc = 100 / speedR;
+        for (int a = 0; a <= amplitube; a++) {
+            for (int s = 0; s <= speedR; s++) {
+                double angle = -18 + aInc * a;
+                if (angle > 18.0) {
+                    angle = 18.0;
+                }
+                int speed = (int) (s * speedInc);
+                if (s == speedR) {
+                    speed = 100;
+                }
+                if (speed < 0) {
+                    speed = 0;
+                }
+                if (speed > 100) {
+                    speed = 100;
+                }
+                generatedMoves.add(new Move(angle, speed));
+            }
+        }
+    }
+
+    void applyInput(int x1, int y1, int vx1, int vy1, int angle1, int nextCheckPointId1, int x2, int y2, int vx2, int vy2, int angle2, int nextCheckPointId2) {
+        // PLAY
+        if (turn == 1) {
+            pod1 = new Pod(x1, y1, vx1, vy1, angle1, GameState.checkpointsList.get(nextCheckPointId1));
+            pod2 = new Pod(x2, y2, vx2, vy2, angle2, GameState.checkpointsList.get(nextCheckPointId2));
+        }
+        pod1.udpate(x1, y1, vx1, vy1, angle1, GameState.checkpointsList.get(nextCheckPointId1));
+        pod2.udpate(x2, y2, vx2, vy2, angle2, GameState.checkpointsList.get(nextCheckPointId2));
+    }
+
+    void play() {
+        if (turn == 1 && !isTesting) {
+            System.out.println((int) pod1.currentCheckpoint.position.x + " " + (int) pod1.currentCheckpoint.position.y + " BOOST");
+            System.out.println((int) pod2.currentCheckpoint.position.x + " " + (int) pod2.currentCheckpoint.position.y + " 100");
+            turn++;
+        } else {
+            turn++;
+            moveWithSimulation();
+        }
+    }
+
+    private void moveWithSimulation() {
+        long solutionsGenerationTime = System.currentTimeMillis();
+        Solutionn[] solutions = generatePopulation(depth, solutionNumber, pod1);
+        Solutionn[] solutions2 = generatePopulation(depth, solutionNumber, pod2);
+        if (isLoggingPerfs) {
+            System.err.println("solutions generation duration: " + (System.currentTimeMillis() - solutionsGenerationTime));
+        }
+        Solutionn best = null;
+        Solutionn best2 = null;
+        double maxScore = -9999999;
+        double maxScore2 = -9999999;
+        System.err.println("x:" + pod1.position.x + " y:" + pod1.position.y + " vx:" + pod1.vx + " vy:" + pod1.vy + " angle" + pod1.angle);
+        long lastLoopTime = System.currentTimeMillis();
+        for (int i = 0; i < solutionNumber; i++) {
+            long lastLoopDuration = System.currentTimeMillis() - lastLoopTime;
+            if (System.currentTimeMillis() + lastLoopDuration - startTime > 74) {
+                if (isLoggingPerfs) {
+                    System.err.println("loop time: " + lastLoopDuration);
+                    System.err.println("Breaked out of simulation loop at index: " + i);
+                }
+                break;
+            }
+            double score = solutions[i].score();
+            if (score > maxScore) {
+                best = solutions[i];
+                maxScore = score;
+            }
+            double score2 = solutions2[i].score();
+            if (score2 > maxScore2) {
+                best2 = solutions2[i];
+                maxScore2 = score2;
+            }
+            lastLoopTime = System.currentTimeMillis();
+        }
+        System.err.println("time: " + (System.currentTimeMillis() - startTime));
+        pod1.playy(best.moves1.get(0));
+        pod2.playy(best2.moves1.get(0));
+        System.err.println("moving:" + best.moves1.get(0));
+        System.err.println("x:" + pod1.position.x + " y:" + pod1.position.y + " vx:" + pod1.vx + " vy:" + pod1.vy + " angle" + pod1.angle);
+        Point res = pod1.toResult();
+        Point res2 = pod2.toResult();
+        Result result = new Result((int) res.x, (int) res.y, best.moves1.get(0).thrust);
+        Result result2 = new Result((int) res2.x, (int) res2.y, best2.moves1.get(0).thrust);
+        printMove(result);
+        printMove(result2);
+    }
+
+    public int clamp(double x, int min, int max) {
+        if (x > max) {
+            return max;
+        }
+        if (x < min) {
+            return min;
+        }
+        return (int) x;
+    }
+
+    private void printMove(Result result) {
+        System.out.println(result.x + " " + result.y + " " + result.thrust);
+    }
+
+    public Solutionn[] generatePopulation(int depth, int solutionNumber, Pod pod) {
+        Solutionn[] solutions = new Solutionn[solutionNumber];
+        for (int i = 0; i < solutionNumber; i++) {
+            Solutionn ssss = new Solutionn(new ArrayList<Move>(), pod);
+            solutions[i] = ssss;
+            for (int j = 0; j < depth; j++) {
+                ssss.moves1.add(generatedMoves.get(rrandom(0, generatedMoves.size() - 1)));
+            }
+        }
+        return solutions;
+    }
+
+    int rrandom(int min, int max) {
+        return ThreadLocalRandom.current().nextInt(max - min) + min;
+    }
+}

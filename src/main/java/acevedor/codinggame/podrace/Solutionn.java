@@ -56,6 +56,11 @@ public class Solutionn {
         pod.checkpointPassedCount = checkpointPassedCount;
     }
 
+    void shift() {
+        moves1.remove(0);
+        moves1.add(Move.generate());
+    }
+
     @Override
     public String toString() {
         return "Solution{" +

@@ -3,8 +3,6 @@ package acevedor.codinggame.podrace;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
-import java.util.concurrent.ThreadLocalRandom;
-
 
 /**
  * Auto-generated code below aims at helping you parse
@@ -28,7 +26,9 @@ public class Player {
 
     int amplitube = 18;
     int speedR = 7;
-    List<Move> generatedMoves = new ArrayList<>();
+    List<Move> generatedMoves;
+    Solutionn lastSolution = null;
+    Solutionn lastSolution2 = null;
 
     public static void main(String args[]) {
         Player player = new Player();
@@ -78,6 +78,7 @@ public class Player {
     public void init() {
         double aInc = 36/ amplitube;
         double speedInc = 100 / speedR;
+        generatedMoves = new ArrayList<>(amplitube * speedR + amplitube + speedR + 1);
         for (int a = 0; a <= amplitube; a++) {
             for (int s = 0; s <= speedR; s++) {
 
@@ -129,8 +130,14 @@ public class Player {
     }
     private void moveWithSimulation() {
         long solutionsGenerationTime = System.currentTimeMillis();
-        Solutionn[] solutions = generatePopulation(depth, solutionNumber, pod1);
-        Solutionn[] solutions2 = generatePopulation(depth, solutionNumber, pod2);
+        List<Solutionn> solutions = generatePopulation(depth, solutionNumber, pod1);
+        List<Solutionn> solutions2 = generatePopulation(depth, solutionNumber, pod2);
+        if(lastSolution != null){
+            solutions.add(0, lastSolution);
+        }
+        if(lastSolution2 != null){
+            solutions.add(0, lastSolution2);
+        }
         if(isLoggingPerfs) {
             System.err.println("solutions generation duration: " + (System.currentTimeMillis() - solutionsGenerationTime));
         }
@@ -150,21 +157,23 @@ public class Player {
                 }
                 break;
             }
-            double score = solutions[i].score();
+            double score = solutions.get(i).score();
             if (score > maxScore) {
-                best = solutions[i];
+                best = solutions.get(i);
                 maxScore = score;
             }
-            double score2 = solutions2[i].score();
+            double score2 = solutions2.get(i).score();
             if (score2 > maxScore2) {
-                best2 = solutions2[i];
+                best2 = solutions2.get(i);
                 maxScore2 = score2;
             }
             lastLoopTime = System.currentTimeMillis();
         }
         System.err.println("time: "+ ( System.currentTimeMillis() - startTime));
         pod1.playy(best.moves1.get(0));
+        lastSolution = best;
         pod2.playy(best2.moves1.get(0));
+        lastSolution2 = best2;
         System.err.println("moving:"+best.moves1.get(0));
         System.err.println("x:" + pod1.position.x + " y:" + pod1.position.y + " vx:" +pod1.vx + " vy:" +pod1.vy+ " angle" + pod1.angle);
         Point res = pod1.toResult();
@@ -175,37 +184,23 @@ public class Player {
         printMove(result2);
     }
 
-
-    public int clamp(double x, int min, int max){
-        if(x > max){
-            return max;
-        }
-        if(x < min){
-            return min;
-        }
-        return (int) x;
-    }
     private void printMove(Result result) {
         System.out.println(result.x + " " + result.y + " " + result.thrust);
     }
 
-    public Solutionn[] generatePopulation(int depth, int solutionNumber, Pod pod) {
-        Solutionn[] solutions = new Solutionn[solutionNumber];
+    public List<Solutionn> generatePopulation(int depth, int solutionNumber, Pod pod) {
+        List<Solutionn> solutions = new ArrayList<>();
         for (int i = 0; i < solutionNumber; i++) {
             Solutionn ssss = new Solutionn (
                     new ArrayList<Move>(),
                     pod
             );
-            solutions[i] = ssss;
+            solutions.add(ssss);
             for (int j = 0; j < depth; j++) {
-                ssss.moves1.add(generatedMoves.get(rrandom(0, generatedMoves.size() - 1)));
+                ssss.moves1.add(generatedMoves.get(MathUtils.rrandom(0, generatedMoves.size() - 1)));
             }
         }
 
         return solutions;
     }
-    int rrandom(int min, int max) {
-        return ThreadLocalRandom.current().nextInt(max - min) + min;
-    }
-
 }

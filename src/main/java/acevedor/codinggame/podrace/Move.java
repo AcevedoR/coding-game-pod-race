@@ -1,7 +1,5 @@
 package acevedor.codinggame.podrace;
 
-import java.util.concurrent.ThreadLocalRandom;
-
 public class Move {
     double angle; // Between -18.0 and +18.0
     int thrust; // Between -1 and 200
@@ -23,7 +21,7 @@ public class Move {
             ramax = 18.0;
         }
 
-        angle = random(ramin, ramax);
+        angle = MathUtils.random(ramin, ramax);
 
 
         int pmin = (int) (this.thrust - 200 * amplitude);
@@ -37,12 +35,14 @@ public class Move {
             pmax = 200;
         }
 
-        this.thrust = (int) random(pmin, pmax);
+        this.thrust = (int) MathUtils.random(pmin, pmax);
 
     }
 
-    double random(double min, double max) {
-        return min + (max - min) * ThreadLocalRandom.current().nextDouble();
+    public static Move generate(){
+        double angle = MathUtils.random(-18.0, 18.0);
+        int thrust = MathUtils.rrandom(0, 200);
+        return new Move(angle, thrust);
     }
 
     @Override
