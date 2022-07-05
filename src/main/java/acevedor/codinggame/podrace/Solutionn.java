@@ -14,8 +14,14 @@ public class Solutionn {
     double vy;
     double checkpointPassedCount;
     List<Move> moves1 = new ArrayList<>();
-
-    public Solutionn(List<Move> moves1, Pod pod) {
+    public Solutionn(List<Move> moves1){
+        this.moves1 = moves1;
+    }
+    public Solutionn(Pod pod, List<Move> moves1){
+        this.moves1 = moves1;
+        this.setPod(pod);
+    }
+    public void setPod(Pod pod) {
         initialCurrentCheckpoint = pod.currentCheckpoint;
         this.pod = pod;
         timeout = pod.timeout;
@@ -25,10 +31,19 @@ public class Solutionn {
         vx = pod.vx;
         vy = pod.vy;
         checkpointPassedCount = pod.checkpointPassedCount;
-        this.moves1 = moves1;
+    }
+
+    public void replaceMovesWithRandom(int amplitude, int thrustRange) {
+        for(Move move : moves1){
+            move.mutate(amplitude, thrustRange, MathUtils.rrandom(0, amplitude), MathUtils.rrandom(0, thrustRange + 1));
+        }
     }
 
     double score() {
+        if(pod == null){
+            // solution is not initialized
+            return -9999999;
+        }
         // Play out the turns
         // Apply the moves to the pods before playing
         for (Move move : moves1) {

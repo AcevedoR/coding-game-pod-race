@@ -36,7 +36,11 @@ public class Move {
         }
 
         this.thrust = (int) MathUtils.random(pmin, pmax);
+    }
 
+    public void mutate(int amplitude, int speeR, int amplitudeFactor, int speeRFactor){
+        angle = (int) (-18 + (39.0 / amplitude) * amplitudeFactor);
+        thrust = (int) (((double) GameState.MAX_THRUST / speeR) * speeRFactor);
     }
 
     public static Move generate(){

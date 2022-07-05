@@ -17,8 +17,9 @@ public class SolutionTest {
         moves.add(new Move(0, 0));
         moves.add(new Move(1, 1));
         moves.add(new Move(2, 2));
-        moves.add(new Move(4, 5));
-        Solutionn solution = new Solutionn(moves, pod);
+        moves.add(new Move(3, 3));
+        Solutionn solution = new Solutionn(moves);
+        solution.setPod(pod);
 
         // when
         solution.shift();
@@ -26,5 +27,53 @@ public class SolutionTest {
         // then
         assertThat(solution.moves1.get(0).angle).isEqualTo(1.0);
         assertThat(solution.moves1.get(0).thrust).isEqualTo(1);
+        assertThat(solution.moves1).hasSize(4);
     }
+
+    @Test
+    public void random_moves_ok(){
+        // given
+        List<Move> moves = new ArrayList<>();
+        moves.add(new Move(0, 0));
+        moves.add(new Move(1, 1));
+        moves.add(new Move(2, 2));
+        moves.add(new Move(3, 3));
+        Solutionn solution = new Solutionn(moves);
+        solution.setPod(pod);
+
+        // when
+        solution.replaceMovesWithRandom(18, 5);
+
+        // then
+        assertThat(solution.moves1)
+                .allSatisfy(move -> assertThat(move.angle).isBetween(-18.0, 18.0))
+                .allSatisfy(move -> assertThat(move.thrust).isBetween(0, GameState.MAX_THRUST));
+    }
+
+    @Test
+    public void scoring_ok(){
+        GameState.precalculateAngles();
+        GameState.checkpointsList.add(new Checkpoint(0, new Point(1000, 500)));
+        Pod pod = new Pod(500, 500, 0, 0, 0, GameState.checkpointsList.get(0));
+
+        Solutionn worstSolution = new Solutionn(pod, List.of(
+                new Move(0, 0)
+        ));
+        Solutionn bestSolution = new Solutionn(pod, List.of(
+                new Move(0, 100)
+        ));
+        Solutionn goodSolutionMaxAngle = new Solutionn(pod, List.of(
+                new Move(-18, 100)
+        ));
+
+        assertThat(bestSolution.score())
+                .isGreaterThan(worstSolution.score())
+                .isGreaterThan(goodSolutionMaxAngle.score());
+
+        assertThat(worstSolution.score())
+                .isLessThan(bestSolution.score())
+                .isLessThan(goodSolutionMaxAngle.score());
+    }
+
+
 }

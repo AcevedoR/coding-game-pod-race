@@ -27,13 +27,6 @@ public class Pod {
         this.currentCheckpoint = nextCheckpoint;
     }
 
-    void play(Point p, int thrust) {
-        this.rotate(p);
-        this.boost(thrust);
-        this.move(1.0d);
-        this.end();
-    }
-
     void playy(Move m) {
         angle += m.angle;
         this.boost(m.thrust);
@@ -136,12 +129,20 @@ public class Pod {
             return;
         }
 
-        // Conversion of the angle to radiants
-        double ra = this.angle * PI / 180.0;
-
-        // Trigonometry
-        this.vx += cos(ra) * thrust;
-        this.vy += sin(ra) * thrust;
+//        // Conversion of the angle to radiants
+//        double ra = this.angle * PI / 180.0;
+//
+//        // Trigonometry
+//        this.vx += cos(ra) * thrust;
+//        this.vy += sin(ra) * thrust;
+        int aaangle = (int) angle;
+        if (angle >= 360.0) {
+            aaangle = (int) angle - 360;
+        } else if (angle < 0.0) {
+            aaangle += 360.0;
+        }
+        this.vx += GameState.precalculatedCos[aaangle] * thrust;
+        this.vy += GameState.precalculatedSin[aaangle] * thrust;
     }
     void move(double t) {
         this.position.x += this.vx * t;
