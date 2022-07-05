@@ -28,6 +28,7 @@ import static com.almasb.fxgl.dsl.FXGLForKtKt.spawn;
 public class BasicGameApp extends GameApplication {
 
     final static int r = 1;
+    public static final int TICK_DURATION = 20;
     boolean autoplay = true;
     Player playerCodingGame = new Player();
     List<Entity> checkpoints = new ArrayList<>();
@@ -57,7 +58,7 @@ public class BasicGameApp extends GameApplication {
         super.onUpdate(tpf);
         if(autoplay){
             try {
-                Thread.sleep(50);
+                Thread.sleep(TICK_DURATION);
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
             }
@@ -69,7 +70,7 @@ public class BasicGameApp extends GameApplication {
         playerCodingGame.debug = true;
         playerCodingGame.isTesting = true;
         playerCodingGame.init();
-        playerCodingGame.startTime = System.currentTimeMillis()+500;
+        playerCodingGame.startTime = System.currentTimeMillis()+50;
         System.out.println("\n ================================================= ");
         Entity player = getGameWorld().getSingleton(EntityType.PLAYER);
 
@@ -114,9 +115,9 @@ public class BasicGameApp extends GameApplication {
 
         spawn("player", 2000*r, 2000*r);
         checkpoints.add(spawn("checkpoint1", 4000*r, 8000*r));
-        checkpoints.add(spawn("checkpoint3", 2500*r, 1200*r));
         checkpoints.add(spawn("checkpoint2", 13000*r, 4000*r));
-//        checkpoints.add(spawn("checkpoint3", 500, 600));
+        checkpoints.add(spawn("checkpoint3", 2500*r, 1200*r));
+        checkpoints.add(spawn("checkpoint4", 14000*r, 7000*r));
         currentCheckpoint = checkpoints.get(0);
         for (int i = 0; i < checkpoints.size(); i++) {
             GameState.checkpointsList.add(new Checkpoint(i, new Point(checkpoints.get(i).getX(), checkpoints.get(i).getY())));
@@ -131,15 +132,16 @@ public class BasicGameApp extends GameApplication {
     public static class SpaceRangerFactory implements EntityFactory {
         @Spawns("player")
         public Entity newPlayer(SpawnData data) {
-            var top = new Circle(50*r, Color.RED);
+            var top = new Circle(200 *r, Color.WHITE);
             top.setStroke(Color.GRAY);
-            var bot = new Rectangle(10*r, 300*r, Color.BLUE);
+            var bot = new Rectangle(12*r, 3000*r, Color.CYAN);
             bot.setStroke(Color.GRAY);
 
             return entityBuilder(data)
                     .type(EntityType.PLAYER)
                     .view(top)
                     .view(bot)
+                    .zIndex(1)
                     .build();
         }
         @Spawns("checkpoint1")
@@ -172,13 +174,24 @@ public class BasicGameApp extends GameApplication {
                     .view(top)
                     .build();
         }
+        @Spawns("checkpoint4")
+        public Entity newCheckpoint4(SpawnData data) {
+            var top = new Circle(600*r, Color.RED);
+            top.setStroke(Color.GRAY);
+
+            return entityBuilder(data)
+                    .type(EntityType.CP3)
+                    .view(top)
+                    .build();
+        }
     }
 
     public enum EntityType {
         PLAYER,
         CP1,
         CP2,
-        CP3
+        CP3,
+        CP4,
     }
     public static void main(String[] args) {
         launch(args);

@@ -25,7 +25,7 @@ public class PlayerTest {
     @Test
     public void play_ok_with_checkpoint_initialized() {
         GameState.checkpointsList.add(new Checkpoint(0, new Point(1000, 500)));
-        player.startTime = System.currentTimeMillis() + 10000;
+        player.startTime = System.currentTimeMillis();
         player.isTesting = true;
         player.depth = 1;
         player.generatedMoves = List.of(
@@ -46,7 +46,7 @@ public class PlayerTest {
         assertThat(player.pod1.position.y)
                 .isEqualTo(500);
         assertThat(player.pod1.vx)
-                .isEqualTo(80*0.85);
+                .isEqualTo(100*0.85);
         assertThat(player.pod1.vy)
                 .isEqualTo(0);
 
@@ -55,7 +55,7 @@ public class PlayerTest {
         assertThat(player.pod1.position.y)
                 .isEqualTo(500);
         assertThat(player.pod1.vx)
-                .isEqualTo(80*0.85);
+                .isEqualTo(100*0.85);
         assertThat(player.pod1.vy)
                 .isEqualTo(0);
     }

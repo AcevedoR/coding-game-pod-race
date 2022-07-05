@@ -13,7 +13,7 @@ public class Player {
     boolean isTesting = false;
     boolean debug=false;
     boolean isLoggingPerfs = true;
-    boolean generatePrecreatedSolutions = true;
+    boolean withOptimization = true;
 
     boolean boostAvailable = true;
     int turn = 1;
@@ -146,10 +146,10 @@ public class Player {
 
         } else {
             turn++;
-            if (generatePrecreatedSolutions) {
+            if (!withOptimization) {
                 moveWithSimulation();
             } else{
-                moveWithSimulationNotPrecreated();
+                moveWithSimulationOptimized();
             }
         }
     }
@@ -160,6 +160,7 @@ public class Player {
         }
         List<Solutionn> ssolutions = generatePopulation(emptySolutions, depth, pod1, System.currentTimeMillis());
         List<Solutionn> ssolutions2 = generatePopulation(emptySolutions2, depth, pod2, System.currentTimeMillis());
+
         if(lastSolution != null){
             lastSolution.shift();
             ssolutions.add(0, lastSolution);
@@ -199,7 +200,7 @@ public class Player {
         movePods(best, best2);
     }
 
-    private void moveWithSimulationNotPrecreated() {
+    private void moveWithSimulationOptimized() {
         long solutionsGenerationTime = System.currentTimeMillis();
         if(isLoggingPerfs) {
             System.err.println("starting simulation time: " + (solutionsGenerationTime - startTime));
@@ -208,14 +209,14 @@ public class Player {
         Solutionn currentSolution = new Solutionn(pod1, getEmptyMoveList(depth));
         Solutionn currentSolution2 = new Solutionn(pod2, getEmptyMoveList(depth));
 
-        if(lastSolution != null){
+        /*if(lastSolution != null){
             lastSolution.shift();
             emptySolutions.add(0, lastSolution);
         }
         if(lastSolution2 != null){
             lastSolution2.shift();
             emptySolutions2.add(0, lastSolution2);
-        }
+        }*/
         if(isLoggingPerfs) {
             System.err.println("solutions generation duration: " + (System.currentTimeMillis() - solutionsGenerationTime));
         }
@@ -240,12 +241,12 @@ public class Player {
 
             double score = currentSolution.score();
             if (score > maxScore) {
-                best = currentSolution;
+                best = new Solutionn(currentSolution);
                 maxScore = score;
             }
             double score2 = currentSolution2.score();
             if (score2 > maxScore2) {
-                best2 = currentSolution2;
+                best2 = new Solutionn(currentSolution2);
                 maxScore2 = score2;
             }
             i++;

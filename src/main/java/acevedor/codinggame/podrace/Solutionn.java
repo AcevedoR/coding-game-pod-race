@@ -14,9 +14,14 @@ public class Solutionn {
     double vy;
     double checkpointPassedCount;
     List<Move> moves1 = new ArrayList<>();
+    public Solutionn(Solutionn s){
+        this.setPod(s.pod);
+        s.moves1.forEach(m -> this.moves1.add(new Move(m.angle, m.thrust)));
+    }
     public Solutionn(List<Move> moves1){
         this.moves1 = moves1;
     }
+
     public Solutionn(Pod pod, List<Move> moves1){
         this.moves1 = moves1;
         this.setPod(pod);
