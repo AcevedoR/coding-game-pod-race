@@ -16,7 +16,6 @@ import javafx.scene.shape.Circle;
 import javafx.scene.shape.Rectangle;
 import kotlin.Unit;
 
-
 import static com.almasb.fxgl.dsl.FXGLForKtKt.entityBuilder;
 import static com.almasb.fxgl.dsl.FXGLForKtKt.getGameScene;
 import static com.almasb.fxgl.dsl.FXGLForKtKt.getGameWorld;
@@ -32,6 +31,9 @@ public class BasicGameApp extends GameApplication {
     List<Entity> checkpoints = new ArrayList<>();
     Entity currentCheckpoint;
     Pod simulation;
+
+    List<Entity> simulationPoints = new ArrayList<>();
+    Entity checkpointIcon;
 
     @Override
     protected void initSettings(GameSettings settings) {
@@ -65,9 +67,11 @@ public class BasicGameApp extends GameApplication {
     }
 
     private Unit play() {
+        clearSimulation();
         playerCodingGame.debug = true;
         playerCodingGame.isTesting = true;
         playerCodingGame.init();
+        GameParameters.depth = 5;
         playerCodingGame.startTime = System.currentTimeMillis()+50;
         System.out.println("\n ================================================= ");
         Entity player = getGameWorld().getSingleton(EntityType.PLAYER);
@@ -86,6 +90,9 @@ public class BasicGameApp extends GameApplication {
         player.setPosition(new Point2D(simulation.position.x, simulation.position.y));
         player.setRotation(minus90(simulation.angle));
 
+        drawSimulation(playerCodingGame.lastSolution);
+
+
         double distance = new Point(player.getX(), player.getY()).distance(new Point(currentCheckpoint.getX(), currentCheckpoint.getY()));
         System.out.println("distance to checkpoint: "+distance + " position: "+currentCheckpoint.getPosition()+ " name:" + currentCheckpoint.getType());
         if(distance < 600*r ){
@@ -94,6 +101,29 @@ public class BasicGameApp extends GameApplication {
         }
 
         return Unit.INSTANCE;
+    }
+
+    private void drawSimulation(final Solutionn solution) {
+        for (int i = 0; i < solution.moves1.size(); i++) {
+            Pod pod = solution.simulateMove(i);
+            Entity p = spawn("simulationPoint", new Point2D(pod.position.x, pod.position.y));
+            simulationPoints.add(p);
+            if(i == solution.moves1.size() - 1){
+                drawCheckpoinPassedIcon(pod.currentCheckpoint);
+            }
+        }
+    }
+    private void clearSimulation() {
+        for (Entity p : simulationPoints) {
+            p.removeFromWorld();
+        }
+        simulationPoints.clear();
+    }
+    private void drawCheckpoinPassedIcon(final Checkpoint c){
+        if(checkpointIcon != null){
+            checkpointIcon.removeFromWorld();
+        }
+        checkpointIcon = spawn("checkpointPassedIcon", new Point2D(c.position.x, c.position.y));
     }
 
     public Entity getNextCheckpoint() {
@@ -180,6 +210,26 @@ public class BasicGameApp extends GameApplication {
             return entityBuilder(data)
                     .type(EntityType.CP3)
                     .view(top)
+                    .build();
+        }
+        @Spawns("simulationPoint")
+        public Entity simulationPoint(SpawnData data) {
+            var top = new Circle(100 *r, Color.IVORY);
+            top.setStroke(Color.GRAY);
+            return entityBuilder(data)
+                    .type(EntityType.PLAYER)
+                    .view(top)
+                    .zIndex(1)
+                    .build();
+        }
+        @Spawns("checkpointPassedIcon")
+        public Entity checkpointPassedIcon(SpawnData data) {
+            var top = new Circle(200 *r, Color.NAVY);
+            top.setStroke(Color.GRAY);
+            return entityBuilder(data)
+                    .type(EntityType.PLAYER)
+                    .view(top)
+                    .zIndex(1)
                     .build();
         }
     }

@@ -18,6 +18,14 @@ public class Pod {
     double checkpointPassedCount = 0;
     Checkpoint currentCheckpoint;
 
+    public Pod(Pod pod){
+        this.position = new Point(pod.position);
+        this.angle = pod.angle;
+        this.vx = pod.vx;
+        this.vy = pod.vy;
+        this.checkpointPassedCount = pod.checkpointPassedCount;
+        this.currentCheckpoint = pod.currentCheckpoint;
+    }
     public Pod(int x, int y, int vx, int vy, int angle, Checkpoint nextCheckpoint){
         this.position.x = x;
         this.position.y = y;
@@ -150,11 +158,12 @@ public class Pod {
     }
     void passCheckpoint(){
         checkpointPassedCount++;
-//        System.err.println("passed checkpoint inc:" + checkpointPassedCount);
     }
     double score() {
-//        return -this.position.distance(currentCheckpoint.position) + checkpointPassedCount * 50000;
-        return checkpointPassedCount * 50000 - this.position.distance(currentCheckpoint.position) - Math.abs(diffAngle(currentCheckpoint.position));
+        return checkpointPassedCount * 500000
+                - this.position.distance(currentCheckpoint.position)
+                - Math.abs(diffAngle(currentCheckpoint.position))
+                + MathUtils.speed(vx, vy) * 5;
     }
 
     Point toResult() {

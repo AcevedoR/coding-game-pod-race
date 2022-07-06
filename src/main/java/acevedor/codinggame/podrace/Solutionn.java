@@ -15,7 +15,7 @@ public class Solutionn {
     double checkpointPassedCount;
     List<Move> moves1 = new ArrayList<>();
     public Solutionn(Solutionn s){
-        this.setPod(s.pod);
+        this.setPod(new Pod(s.pod));
         s.moves1.forEach(m -> this.moves1.add(new Move(m.angle, m.thrust)));
     }
     public Solutionn(List<Move> moves1){
@@ -51,18 +51,22 @@ public class Solutionn {
         }
         // Play out the turns
         // Apply the moves to the pods before playing
-        for (Move move : moves1) {
-            pod.playy(move);
-            if (pod.checkNewCPAndUpdate(pod.position)) {
-                pod.passCheckpoint();
-            }
-        }
+        simulateMoves(moves1);
 
         // Compute the score
         double result = pod.score();
         // Reset everyone to their initial states
         reset();
         return result;
+    }
+
+    private void simulateMoves(List<Move> moves) {
+        for (Move move : moves) {
+            pod.playy(move);
+            if (pod.checkNewCPAndUpdate(pod.position)) {
+                pod.passCheckpoint();
+            }
+        }
     }
 
     void reset() {
@@ -79,6 +83,13 @@ public class Solutionn {
     void shift() {
         moves1.remove(0);
         moves1.add(Move.generate());
+    }
+
+    Pod simulateMove(int i){
+        List<Move> l = new ArrayList();
+        l.add(moves1.get(i));
+        simulateMoves(l);
+        return new Pod(pod);
     }
 
     @Override

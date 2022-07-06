@@ -233,18 +233,18 @@ public class Player {
                 maxScore2 = score2;
             }
 
-//            if(this.lastSolution != null && this.lastSolution2 != null) {
-//                double scoreLastMutated = lastSolution.score();
-//                if (scoreLastMutated > maxScore) {
-//                    best = new Solutionn(lastSolution);
-//                    maxScore = scoreLastMutated;
-//                }
-//                double score2LastMutated = lastSolution2.score();
-//                if (score2LastMutated > maxScore2) {
-//                    best2 = new Solutionn(lastSolution2);
-//                    maxScore2 = score2LastMutated;
-//                }
-//            }
+            /*if(this.lastSolution != null && this.lastSolution2 != null) {
+                double scoreLastMutated = lastSolution.score();
+                if (scoreLastMutated > maxScore) {
+                    best = new Solutionn(lastSolution);
+                    maxScore = scoreLastMutated;
+                }
+                double score2LastMutated = lastSolution2.score();
+                if (score2LastMutated > maxScore2) {
+                    best2 = new Solutionn(lastSolution2);
+                    maxScore2 = score2LastMutated;
+                }
+            }*/
             i++;
         }
         System.err.println("time: "+ ( System.currentTimeMillis() - startTime));

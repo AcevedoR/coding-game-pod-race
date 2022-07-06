@@ -33,5 +33,7 @@ public class MathUtils {
             return ceil(d);
         }
     }
-
+    public static double speed(double vx, double vy) {
+        return Math.sqrt((vx * vx) + (vy * vy));
+    }
 }
