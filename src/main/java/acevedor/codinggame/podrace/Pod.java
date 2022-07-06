@@ -141,8 +141,8 @@ public class Pod {
         } else if (angle < 0.0) {
             aaangle += 360.0;
         }
-        this.vx += GameState.precalculatedCos[aaangle] * thrust;
-        this.vy += GameState.precalculatedSin[aaangle] * thrust;
+        this.vx += GameCache.precalculatedCos[aaangle] * thrust;
+        this.vy += GameCache.precalculatedSin[aaangle] * thrust;
     }
     void move(double t) {
         this.position.x += this.vx * t;
@@ -192,7 +192,7 @@ public class Pod {
 
     public boolean checkNewCPAndUpdate(Point p){
         if(p.distance(currentCheckpoint.position) < 599){// TODO should be 600
-            currentCheckpoint = GameState.checkpointsList.next(currentCheckpoint);
+            currentCheckpoint = GameCache.checkpointsList.next(currentCheckpoint);
             return true;
         }
         return false;

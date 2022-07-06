@@ -4,8 +4,6 @@ import java.util.List;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.ValueSource;
 
 import static java.lang.Math.round;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -18,16 +16,16 @@ public class PlayerTest {
     public void init(){
         player = new Player();
         player.debug = true;
-        player.solutionNumber = 30;
+        GameParameters.solutionNumber = 30;
         player.init();
     }
 
     @Test
     public void play_ok_with_checkpoint_initialized() {
-        GameState.checkpointsList.add(new Checkpoint(0, new Point(1000, 500)));
+        GameCache.checkpointsList.add(new Checkpoint(0, new Point(1000, 500)));
         player.startTime = System.currentTimeMillis();
         player.isTesting = true;
-        player.depth = 1;
+        GameParameters.depth = 1;
         player.generatedMoves = List.of(
                 new Move(0, 0),
                 new Move(0, 80),
@@ -62,10 +60,10 @@ public class PlayerTest {
 
     @Test
     public void moves_generated() {
-        GameState.checkpointsList.add(new Checkpoint(0, new Point(1000, 500)));
+        GameCache.checkpointsList.add(new Checkpoint(0, new Point(1000, 500)));
         player.startTime = System.currentTimeMillis();
         player.isTesting = true;
-        player.depth = 1;
+        GameParameters.depth = 1;
         player.init();
 
         player.applyInput(
@@ -75,17 +73,17 @@ public class PlayerTest {
         player.play();
 
         assertThat(player.generatedMoves)
-                .hasSize(player.amplitube * player.speedR + player.amplitube + player.speedR +1);
+                .hasSize(GameParameters.amplitube * GameParameters.speedR + GameParameters.amplitube + GameParameters.speedR +1);
     }
 
     @Test
     public void solution_generation_timeout() {
-        GameState.checkpointsList.add(new Checkpoint(0, new Point(1000, 500)));
+        GameCache.checkpointsList.add(new Checkpoint(0, new Point(1000, 500)));
         player.startTime = System.currentTimeMillis() + 1000;
         player.isTesting = true;
-        player.depth = 1;
-        player.solutionNumber = 100000;
-        player.SOLUTIONS_GENERATION_TIMEOUT = 0;
+        GameParameters.depth = 1;
+        GameParameters.solutionNumber = 100000;
+        GameParameters.SOLUTIONS_GENERATION_TIMEOUT = 0;
 
         player.applyInput(
                 500, 500, 0, 0, 0, 0,

@@ -47,14 +47,14 @@ public class SolutionTest {
         // then
         assertThat(solution.moves1)
                 .allSatisfy(move -> assertThat(move.angle).isBetween(-18.0, 18.0))
-                .allSatisfy(move -> assertThat(move.thrust).isBetween(0, GameState.MAX_THRUST));
+                .allSatisfy(move -> assertThat(move.thrust).isBetween(0, GameConstants.MAX_THRUST));
     }
 
     @Test
     public void scoring_ok(){
-        GameState.precalculateAngles();
-        GameState.checkpointsList.add(new Checkpoint(0, new Point(1000, 500)));
-        Pod pod = new Pod(500, 500, 0, 0, 0, GameState.checkpointsList.get(0));
+        GameCache.precalculateAngles();
+        GameCache.checkpointsList.add(new Checkpoint(0, new Point(1000, 500)));
+        Pod pod = new Pod(500, 500, 0, 0, 0, GameCache.checkpointsList.get(0));
 
         Solutionn worstSolution = new Solutionn(pod, List.of(
                 new Move(0, 0)

@@ -15,28 +15,13 @@ public class Player {
     boolean isLoggingPerfs = true;
     boolean withOptimization = true;
 
-    boolean boostAvailable = true;
     int turn = 1;
     Pod pod2;
     Pod pod1;
-    int oldx;
-    int oldy;
-    static int TIMEOUT_MAX = 60;
-    static int SOLUTIONS_GENERATION_TIMEOUT = 15;
-    int maxThrust = 100;
-    int depth = 5;
-    int solutionNumber = 35000;
     long startTime;
-
-    int amplitube = 18;
-    int speedR = 7;
     List<Move> generatedMoves;
     Solutionn lastSolution = null;
     Solutionn lastSolution2 = null;
-
-    // opti
-    List<Solutionn> emptySolutions = new ArrayList<>();
-    List<Solutionn> emptySolutions2 = new ArrayList<>();
 
     public static void main(String args[]) {
         Player player = new Player();
@@ -48,7 +33,7 @@ public class Player {
         for (int i = 0; i < checkpointCount; i++) {
             int checkpointX = in.nextInt();
             int checkpointY = in.nextInt();
-            GameState.checkpointsList.add(new Checkpoint(i, new Point(checkpointX, checkpointY)));
+            GameCache.checkpointsList.add(new Checkpoint(i, new Point(checkpointX, checkpointY)));
         }
 
         // game loop
@@ -84,24 +69,24 @@ public class Player {
     }
 
     public void init() {
-         GameState.precalculateAngles();
-        for (int i = 0; i < solutionNumber; i++) {
+         GameCache.precalculateAngles();
+        for (int i = 0; i < GameParameters.solutionNumber; i++) {
             Solutionn ssss = new Solutionn(
                 new ArrayList<Move>()
             );
-            emptySolutions.add(ssss);
+            GameCache.emptySolutions.add(ssss);
             Solutionn ssss2 = new Solutionn(
                     new ArrayList<Move>()
             );
-            emptySolutions2.add(ssss2);
+            GameCache.emptySolutions2.add(ssss2);
         }
 
 
-        double aInc = 36/ amplitube;
-        double speedInc = maxThrust / speedR;
-        generatedMoves = new ArrayList<>(amplitube * speedR + amplitube + speedR + 1);
-        for (int a = 0; a <= amplitube; a++) {
-            for (int s = 0; s <= speedR; s++) {
+        double aInc = 36/ GameParameters.amplitube;
+        double speedInc = GameConstants.MAX_THRUST / GameParameters.speedR;
+        generatedMoves = new ArrayList<>(GameParameters.amplitube * GameParameters.speedR + GameParameters.amplitube + GameParameters.speedR + 1);
+        for (int a = 0; a <= GameParameters.amplitube; a++) {
+            for (int s = 0; s <= GameParameters.speedR; s++) {
 
                 double angle = -18 + aInc * a;
 
@@ -110,15 +95,15 @@ public class Player {
                 }
 
                 int speed = (int) ( s * speedInc);
-                if(s == speedR){
-                    speed = maxThrust;
+                if(s == GameParameters.speedR){
+                    speed = GameConstants.MAX_THRUST;
                 }
 
                 if (speed < 0) {
                     speed = 0;
                 }
-                if (speed > maxThrust) {
-                    speed = maxThrust;
+                if (speed > GameConstants.MAX_THRUST) {
+                    speed = GameConstants.MAX_THRUST;
                 }
                 generatedMoves.add(new Move(angle, speed));
             }
@@ -131,11 +116,11 @@ public class Player {
     ) {
         // PLAY
         if (turn == 1) {
-            pod1 = new Pod(x1, y1, vx1, vy1, angle1, GameState.checkpointsList.get(nextCheckPointId1));
-            pod2 = new Pod(x2, y2, vx2, vy2, angle2, GameState.checkpointsList.get(nextCheckPointId2));
+            pod1 = new Pod(x1, y1, vx1, vy1, angle1, GameCache.checkpointsList.get(nextCheckPointId1));
+            pod2 = new Pod(x2, y2, vx2, vy2, angle2, GameCache.checkpointsList.get(nextCheckPointId2));
         }          
-        pod1.udpate(x1, y1, vx1, vy1, angle1, GameState.checkpointsList.get(nextCheckPointId1));
-        pod2.udpate(x2, y2, vx2, vy2, angle2, GameState.checkpointsList.get(nextCheckPointId2));
+        pod1.udpate(x1, y1, vx1, vy1, angle1, GameCache.checkpointsList.get(nextCheckPointId1));
+        pod2.udpate(x2, y2, vx2, vy2, angle2, GameCache.checkpointsList.get(nextCheckPointId2));
     }
 
     void play(){
@@ -158,8 +143,8 @@ public class Player {
         if(isLoggingPerfs) {
             System.err.println("starting simulation time: " + (solutionsGenerationTime - startTime));
         }
-        List<Solutionn> ssolutions = generatePopulation(emptySolutions, depth, pod1, System.currentTimeMillis());
-        List<Solutionn> ssolutions2 = generatePopulation(emptySolutions2, depth, pod2, System.currentTimeMillis());
+        List<Solutionn> ssolutions = generatePopulation(GameCache.emptySolutions, GameParameters.depth, pod1, System.currentTimeMillis());
+        List<Solutionn> ssolutions2 = generatePopulation(GameCache.emptySolutions2, GameParameters.depth, pod2, System.currentTimeMillis());
 
         if(lastSolution != null){
             lastSolution.shift();
@@ -178,8 +163,8 @@ public class Player {
         double maxScore2 = -9999999;
         System.err.println("x:" + pod1.position.x + " y:" + pod1.position.y + " vx:" +pod1.vx + " vy:" +pod1.vy+ " angle" + pod1.angle);
 
-        for (int i = 0; i < solutionNumber; i++) {
-            if(System.currentTimeMillis() - startTime > TIMEOUT_MAX){
+        for (int i = 0; i < GameParameters.solutionNumber; i++) {
+            if(System.currentTimeMillis() - startTime > GameParameters.TIMEOUT_MAX){
                 if(isLoggingPerfs) {
                     System.err.println("Breaked out of simulation loop at index: " + i);
                 }
@@ -206,17 +191,15 @@ public class Player {
             System.err.println("starting simulation time: " + (solutionsGenerationTime - startTime));
         }
 
-        Solutionn currentSolution = new Solutionn(pod1, getEmptyMoveList(depth));
-        Solutionn currentSolution2 = new Solutionn(pod2, getEmptyMoveList(depth));
+        Solutionn currentSolution = new Solutionn(pod1, getEmptyMoveList(GameParameters.depth));
+        Solutionn currentSolution2 = new Solutionn(pod2, getEmptyMoveList(GameParameters.depth));
 
-        /*if(lastSolution != null){
+        if(lastSolution != null){
             lastSolution.shift();
-            emptySolutions.add(0, lastSolution);
         }
         if(lastSolution2 != null){
             lastSolution2.shift();
-            emptySolutions2.add(0, lastSolution2);
-        }*/
+        }
         if(isLoggingPerfs) {
             System.err.println("solutions generation duration: " + (System.currentTimeMillis() - solutionsGenerationTime));
         }
@@ -228,15 +211,15 @@ public class Player {
 
         int i= 0;
         while (true) {
-            if(System.currentTimeMillis() - startTime > TIMEOUT_MAX){
+            if(System.currentTimeMillis() - startTime > GameParameters.TIMEOUT_MAX){
                 if(isLoggingPerfs) {
                     System.err.println("Breaked out of simulation loop at index: " + i);
                 }
                 break;
             }
-            currentSolution.replaceMovesWithRandom(amplitube, speedR);
+            currentSolution.replaceMovesWithRandom(GameParameters.amplitube, GameParameters.speedR);
             currentSolution.setPod(pod1);
-            currentSolution2.replaceMovesWithRandom(amplitube, speedR);
+            currentSolution2.replaceMovesWithRandom(GameParameters.amplitube, GameParameters.speedR);
             currentSolution2.setPod(pod2);
 
             double score = currentSolution.score();
@@ -249,9 +232,24 @@ public class Player {
                 best2 = new Solutionn(currentSolution2);
                 maxScore2 = score2;
             }
+
+//            if(this.lastSolution != null && this.lastSolution2 != null) {
+//                double scoreLastMutated = lastSolution.score();
+//                if (scoreLastMutated > maxScore) {
+//                    best = new Solutionn(lastSolution);
+//                    maxScore = scoreLastMutated;
+//                }
+//                double score2LastMutated = lastSolution2.score();
+//                if (score2LastMutated > maxScore2) {
+//                    best2 = new Solutionn(lastSolution2);
+//                    maxScore2 = score2LastMutated;
+//                }
+//            }
             i++;
         }
         System.err.println("time: "+ ( System.currentTimeMillis() - startTime));
+        lastSolution = new Solutionn(currentSolution);
+        lastSolution2 = new Solutionn(currentSolution2);
         movePods(best, best2);
     }
 
@@ -276,7 +274,7 @@ public class Player {
 
     public List<Solutionn> generatePopulation(List<Solutionn> s, int depth, Pod pod, long methodStartTime) {
         for(int i = 0; i < s.size(); i++) {
-            if(System.currentTimeMillis() - methodStartTime > SOLUTIONS_GENERATION_TIMEOUT) {
+            if(System.currentTimeMillis() - methodStartTime > GameParameters.SOLUTIONS_GENERATION_TIMEOUT) {
                 if(isLoggingPerfs) {
                     System.err.println("Breaked out of solution generation at index: " + i);
                 }

@@ -1,8 +1,5 @@
 package acevedor.codinggame.podrace;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.junit.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -18,7 +15,7 @@ public class MoveTest {
             for (int a = 0; a < amplitude; a++) {
                 move.mutate(amplitude, speerR, a, s);
                 assertThat(move.angle).isBetween(-18.0, 18.0);
-                assertThat(move.thrust).isBetween(0, GameState.MAX_THRUST);
+                assertThat(move.thrust).isBetween(0, GameConstants.MAX_THRUST);
             }
         }
     }

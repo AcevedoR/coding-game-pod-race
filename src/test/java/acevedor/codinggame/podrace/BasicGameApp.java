@@ -8,7 +8,6 @@ import com.almasb.fxgl.entity.SpawnData;
 import com.almasb.fxgl.entity.Spawns;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import javafx.geometry.Point2D;
 import javafx.scene.input.KeyCode;
@@ -22,7 +21,6 @@ import static com.almasb.fxgl.dsl.FXGLForKtKt.entityBuilder;
 import static com.almasb.fxgl.dsl.FXGLForKtKt.getGameScene;
 import static com.almasb.fxgl.dsl.FXGLForKtKt.getGameWorld;
 import static com.almasb.fxgl.dsl.FXGLForKtKt.onKeyUp;
-import static com.almasb.fxgl.dsl.FXGLForKtKt.set;
 import static com.almasb.fxgl.dsl.FXGLForKtKt.spawn;
 
 public class BasicGameApp extends GameApplication {
@@ -120,7 +118,7 @@ public class BasicGameApp extends GameApplication {
         checkpoints.add(spawn("checkpoint4", 14000*r, 7000*r));
         currentCheckpoint = checkpoints.get(0);
         for (int i = 0; i < checkpoints.size(); i++) {
-            GameState.checkpointsList.add(new Checkpoint(i, new Point(checkpoints.get(i).getX(), checkpoints.get(i).getY())));
+            GameCache.checkpointsList.add(new Checkpoint(i, new Point(checkpoints.get(i).getX(), checkpoints.get(i).getY())));
         }
 
         Entity player = getGameWorld().getSingleton(EntityType.PLAYER);
