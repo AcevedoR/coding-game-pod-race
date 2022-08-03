@@ -22,30 +22,27 @@ import static com.almasb.fxgl.dsl.FXGLForKtKt.getGameWorld;
 import static com.almasb.fxgl.dsl.FXGLForKtKt.onKeyUp;
 import static com.almasb.fxgl.dsl.FXGLForKtKt.spawn;
 
-public class BasicGameApp extends GameApplication {
+public class Simulation2D extends GameApplication {
 
-    final static int r = 1;
+    final static int ration2D = 1;
     public static final int TICK_DURATION = 20;
     boolean autoplay = true;
-    Player playerCodingGame = new Player();
-    List<Entity> checkpoints = new ArrayList<>();
-    Entity currentCheckpoint;
-    Pod simulation;
-
     List<Entity> simulationPoints = new ArrayList<>();
     Entity checkpointIcon;
+    SimulateEngine simulationEngine;
 
     @Override
     protected void initSettings(GameSettings settings) {
-        settings.setWidth(16000*r);
-        settings.setHeight(9000*r);
+        settings.setWidth(16000* ration2D);
+        settings.setHeight(9000* ration2D);
         settings.setTitle("Basic Game App");
     }
 
     @Override
     protected void initInput() {
         onKeyUp(KeyCode.SPACE, () -> {
-            return play();
+            simulationEngine.play();
+            return Unit.INSTANCE;
         });
         onKeyUp(KeyCode.ENTER, () -> {
             autoplay = !autoplay;
@@ -62,45 +59,10 @@ public class BasicGameApp extends GameApplication {
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
             }
-            play();
+            clearSimulation();
+            Solutionn solution = simulationEngine.play();
+            drawSimulation(solution);
         }
-    }
-
-    private Unit play() {
-        clearSimulation();
-        playerCodingGame.debug = true;
-        playerCodingGame.isTesting = true;
-        playerCodingGame.init();
-        GameParameters.depth = 5;
-        playerCodingGame.startTime = System.currentTimeMillis()+50;
-        System.out.println("\n ================================================= ");
-        Entity player = getGameWorld().getSingleton(EntityType.PLAYER);
-
-        playerCodingGame.applyInput(
-                (int) player.getX(),
-                (int) player.getY(),
-                simulation != null ? (int) simulation.vx : 0,
-                simulation != null ? (int) simulation.vy : 0,
-                (int) plus90(player.getRotation()),
-                checkpoints.indexOf(currentCheckpoint),
-                0,0,0,0,0,0 // pod 2
-        );
-        playerCodingGame.play();
-        simulation = playerCodingGame.pod1;
-        player.setPosition(new Point2D(simulation.position.x, simulation.position.y));
-        player.setRotation(minus90(simulation.angle));
-
-        drawSimulation(playerCodingGame.lastSolution);
-
-
-        double distance = new Point(player.getX(), player.getY()).distance(new Point(currentCheckpoint.getX(), currentCheckpoint.getY()));
-        System.out.println("distance to checkpoint: "+distance + " position: "+currentCheckpoint.getPosition()+ " name:" + currentCheckpoint.getType());
-        if(distance < 600*r ){
-            currentCheckpoint = getNextCheckpoint();
-            System.out.println("checkpoint reached, new one: "+currentCheckpoint.toString());
-        }
-
-        return Unit.INSTANCE;
     }
 
     private void drawSimulation(final Solutionn solution) {
@@ -126,14 +88,6 @@ public class BasicGameApp extends GameApplication {
         checkpointIcon = spawn("checkpointPassedIcon", new Point2D(c.position.x, c.position.y));
     }
 
-    public Entity getNextCheckpoint() {
-        int i = checkpoints.indexOf(currentCheckpoint);
-        if (i + 1 < checkpoints.size()) {
-            return checkpoints.get(i + 1);
-        } else {
-            return checkpoints.get(0);
-        }
-    }
     @Override
     protected void initGame(){
 
@@ -141,28 +95,30 @@ public class BasicGameApp extends GameApplication {
 
         getGameWorld().addEntityFactory(new SpaceRangerFactory());
 
-        spawn("player", 2000*r, 2000*r);
-        checkpoints.add(spawn("checkpoint1", 4000*r, 8000*r));
-        checkpoints.add(spawn("checkpoint2", 13000*r, 4000*r));
-        checkpoints.add(spawn("checkpoint3", 2500*r, 1200*r));
-        checkpoints.add(spawn("checkpoint4", 14000*r, 7000*r));
-        currentCheckpoint = checkpoints.get(0);
-        for (int i = 0; i < checkpoints.size(); i++) {
-            GameCache.checkpointsList.add(new Checkpoint(i, new Point(checkpoints.get(i).getX(), checkpoints.get(i).getY())));
-        }
-
+        spawn("player", 2000* ration2D, 2000* ration2D);
         Entity player = getGameWorld().getSingleton(EntityType.PLAYER);
         player.setRotation(90);
 
-        playerCodingGame.init();
-        simulation = playerCodingGame.pod1;
+        simulationEngine = new SimulateEngine(
+                ration2D,
+                player,
+                List.of(
+                        spawn("checkpoint1", 4000 * ration2D, 8000 * ration2D),
+                        spawn("checkpoint2", 13000 * ration2D, 4000 * ration2D),
+                        spawn("checkpoint3", 2500 * ration2D, 1200 * ration2D),
+                        spawn("checkpoint4", 14000 * ration2D, 7000 * ration2D)
+                )
+        );
+
+        GameParameters.depth = 5;
+        simulationEngine.playerCodingGame.startTime = System.currentTimeMillis()+50;
     }
     public static class SpaceRangerFactory implements EntityFactory {
         @Spawns("player")
         public Entity newPlayer(SpawnData data) {
-            var top = new Circle(200 *r, Color.WHITE);
+            var top = new Circle(200 * ration2D, Color.WHITE);
             top.setStroke(Color.GRAY);
-            var bot = new Rectangle(12*r, 3000*r, Color.CYAN);
+            var bot = new Rectangle(12* ration2D, 3000* ration2D, Color.CYAN);
             bot.setStroke(Color.GRAY);
 
             return entityBuilder(data)
@@ -174,7 +130,7 @@ public class BasicGameApp extends GameApplication {
         }
         @Spawns("checkpoint1")
         public Entity newCheckpoint(SpawnData data) {
-            var top = new Circle(600*r, Color.GREEN);
+            var top = new Circle(600* ration2D, Color.GREEN);
             top.setStroke(Color.GRAY);
 
             return entityBuilder(data)
@@ -184,7 +140,7 @@ public class BasicGameApp extends GameApplication {
         }
         @Spawns("checkpoint2")
         public Entity newCheckpoint2(SpawnData data) {
-            var top = new Circle(600*r, Color.YELLOW);
+            var top = new Circle(600* ration2D, Color.YELLOW);
             top.setStroke(Color.GRAY);
 
             return entityBuilder(data)
@@ -194,7 +150,7 @@ public class BasicGameApp extends GameApplication {
         }
         @Spawns("checkpoint3")
         public Entity newCheckpoint3(SpawnData data) {
-            var top = new Circle(600*r, Color.MAGENTA);
+            var top = new Circle(600* ration2D, Color.MAGENTA);
             top.setStroke(Color.GRAY);
 
             return entityBuilder(data)
@@ -204,7 +160,7 @@ public class BasicGameApp extends GameApplication {
         }
         @Spawns("checkpoint4")
         public Entity newCheckpoint4(SpawnData data) {
-            var top = new Circle(600*r, Color.RED);
+            var top = new Circle(600* ration2D, Color.RED);
             top.setStroke(Color.GRAY);
 
             return entityBuilder(data)
@@ -214,7 +170,7 @@ public class BasicGameApp extends GameApplication {
         }
         @Spawns("simulationPoint")
         public Entity simulationPoint(SpawnData data) {
-            var top = new Circle(100 *r, Color.IVORY);
+            var top = new Circle(100 * ration2D, Color.IVORY);
             top.setStroke(Color.GRAY);
             return entityBuilder(data)
                     .type(EntityType.PLAYER)
@@ -224,7 +180,7 @@ public class BasicGameApp extends GameApplication {
         }
         @Spawns("checkpointPassedIcon")
         public Entity checkpointPassedIcon(SpawnData data) {
-            var top = new Circle(200 *r, Color.NAVY);
+            var top = new Circle(200 * ration2D, Color.NAVY);
             top.setStroke(Color.GRAY);
             return entityBuilder(data)
                     .type(EntityType.PLAYER)
@@ -244,24 +200,4 @@ public class BasicGameApp extends GameApplication {
     public static void main(String[] args) {
         launch(args);
     }
-
-    double minus90(double angle){
-        angle = angle - 90;
-        if (angle >= 360.0) {
-            angle = angle - 360.0;
-        } else if (angle < 0.0) {
-            angle += 360.0;
-        }
-        return angle;
-    }
-    double plus90(double angle){
-        angle = angle + 90;
-        if (angle >= 360.0) {
-            angle = angle - 360.0;
-        } else if (angle < 0.0) {
-            angle += 360.0;
-        }
-        return angle;
-    }
-
 }

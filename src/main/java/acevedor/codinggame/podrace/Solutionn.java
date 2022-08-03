@@ -51,22 +51,30 @@ public class Solutionn {
         }
         // Play out the turns
         // Apply the moves to the pods before playing
-        simulateMoves(moves1);
+        double score = simulateMoves(moves1);
 
-        // Compute the score
-        double result = pod.score();
+//        double result = pod.score();
+        double result = score;
+
         // Reset everyone to their initial states
         reset();
         return result;
     }
 
-    private void simulateMoves(List<Move> moves) {
-        for (Move move : moves) {
-            pod.playy(move);
+    private double simulateMoves(List<Move> moves) {
+        double score = 0;
+        for (int i = 0; i < moves.size(); i++) {
+            pod.playy(moves.get(i));
             if (pod.checkNewCPAndUpdate(pod.position)) {
                 pod.passCheckpoint();
             }
+            if(i == moves.size() - 1){
+                score = pod.score();
+            } else {
+                score += pod.score() * 0.5 /GameParameters.depth * i;
+            }
         }
+        return score;
     }
 
     void reset() {

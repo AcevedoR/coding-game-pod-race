@@ -70,16 +70,18 @@ public class Player {
 
     public void init() {
          GameCache.precalculateAngles();
-        for (int i = 0; i < GameParameters.solutionNumber; i++) {
-            Solutionn ssss = new Solutionn(
-                new ArrayList<Move>()
-            );
-            GameCache.emptySolutions.add(ssss);
-            Solutionn ssss2 = new Solutionn(
-                    new ArrayList<Move>()
-            );
-            GameCache.emptySolutions2.add(ssss2);
-        }
+         if(!withOptimization) {
+             for (int i = 0; i < GameParameters.solutionNumber; i++) {
+                 Solutionn ssss = new Solutionn(
+                         new ArrayList<Move>()
+                 );
+                 GameCache.emptySolutions.add(ssss);
+                 Solutionn ssss2 = new Solutionn(
+                         new ArrayList<Move>()
+                 );
+                 GameCache.emptySolutions2.add(ssss2);
+             }
+         }
 
 
         double aInc = 36/ GameParameters.amplitube;
