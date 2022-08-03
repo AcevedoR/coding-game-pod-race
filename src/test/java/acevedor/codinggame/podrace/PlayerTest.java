@@ -26,12 +26,6 @@ public class PlayerTest {
         player.startTime = System.currentTimeMillis();
         player.isTesting = true;
         GameParameters.depth = 1;
-        player.generatedMoves = List.of(
-                new Move(0, 0),
-                new Move(0, 80),
-                new Move(18, 80),
-                new Move(-18, 80)
-        );
 
         player.applyInput(
                 500, 500, 0, 0, 0, 0,
@@ -58,23 +52,23 @@ public class PlayerTest {
                 .isEqualTo(0);
     }
 
-    @Test
-    public void moves_generated() {
-        GameCache.checkpointsList.add(new Checkpoint(0, new Point(1000, 500)));
-        player.startTime = System.currentTimeMillis();
-        player.isTesting = true;
-        GameParameters.depth = 1;
-        player.init();
-
-        player.applyInput(
-                500, 500, 0, 0, 0, 0,
-                200, 500, 0, 0, 0, 0
-        );
-        player.play();
-
-        assertThat(player.generatedMoves)
-                .hasSize(GameParameters.amplitube * GameParameters.speedR + GameParameters.amplitube + GameParameters.speedR +1);
-    }
+//    @Test
+//    public void moves_generated() {
+//        GameCache.checkpointsList.add(new Checkpoint(0, new Point(1000, 500)));
+//        player.startTime = System.currentTimeMillis();
+//        player.isTesting = true;
+//        GameParameters.depth = 1;
+//        player.init();
+//
+//        player.applyInput(
+//                500, 500, 0, 0, 0, 0,
+//                200, 500, 0, 0, 0, 0
+//        );
+//        player.play();
+//
+//        assertThat(player.generatedMoves)
+//                .hasSize(GameParameters.amplitube * GameParameters.speedR + GameParameters.amplitube + GameParameters.speedR +1);
+//    }
 
     @Test
     public void solution_generation_timeout() {

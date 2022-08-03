@@ -11,7 +11,7 @@ public class MathUtils {
     }
 
     public static int rrandom(int min, int max) {
-        return ThreadLocalRandom.current().nextInt(max - min) + min;
+        return ThreadLocalRandom.current().nextInt(max - min + 1) + min;
     }
 
     public static int clamp(double x, int min, int max){

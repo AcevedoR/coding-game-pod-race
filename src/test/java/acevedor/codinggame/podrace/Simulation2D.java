@@ -41,7 +41,9 @@ public class Simulation2D extends GameApplication {
     @Override
     protected void initInput() {
         onKeyUp(KeyCode.SPACE, () -> {
-            simulationEngine.play();
+            clearSimulation();
+            Solutionn solution = simulationEngine.play();
+            drawSimulation(solution);
             return Unit.INSTANCE;
         });
         onKeyUp(KeyCode.ENTER, () -> {
@@ -110,7 +112,7 @@ public class Simulation2D extends GameApplication {
                 )
         );
 
-        GameParameters.depth = 5;
+        GameParameters.depth = 10;
         simulationEngine.playerCodingGame.startTime = System.currentTimeMillis()+50;
     }
     public static class SpaceRangerFactory implements EntityFactory {

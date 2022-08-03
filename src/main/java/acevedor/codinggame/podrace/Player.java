@@ -19,7 +19,6 @@ public class Player {
     Pod pod2;
     Pod pod1;
     long startTime;
-    List<Move> generatedMoves;
     Solutionn lastSolution = null;
     Solutionn lastSolution2 = null;
 
@@ -69,47 +68,7 @@ public class Player {
     }
 
     public void init() {
-         GameCache.precalculateAngles();
-         if(!withOptimization) {
-             for (int i = 0; i < GameParameters.solutionNumber; i++) {
-                 Solutionn ssss = new Solutionn(
-                         new ArrayList<Move>()
-                 );
-                 GameCache.emptySolutions.add(ssss);
-                 Solutionn ssss2 = new Solutionn(
-                         new ArrayList<Move>()
-                 );
-                 GameCache.emptySolutions2.add(ssss2);
-             }
-         }
-
-
-        double aInc = 36/ GameParameters.amplitube;
-        double speedInc = GameConstants.MAX_THRUST / GameParameters.speedR;
-        generatedMoves = new ArrayList<>(GameParameters.amplitube * GameParameters.speedR + GameParameters.amplitube + GameParameters.speedR + 1);
-        for (int a = 0; a <= GameParameters.amplitube; a++) {
-            for (int s = 0; s <= GameParameters.speedR; s++) {
-
-                double angle = -18 + aInc * a;
-
-                if (angle > 18.0) {
-                    angle = 18.0;
-                }
-
-                int speed = (int) ( s * speedInc);
-                if(s == GameParameters.speedR){
-                    speed = GameConstants.MAX_THRUST;
-                }
-
-                if (speed < 0) {
-                    speed = 0;
-                }
-                if (speed > GameConstants.MAX_THRUST) {
-                    speed = GameConstants.MAX_THRUST;
-                }
-                generatedMoves.add(new Move(angle, speed));
-            }
-        }
+        GameCache.precalculateAngles();
     }
 
     void applyInput(
@@ -133,58 +92,8 @@ public class Player {
 
         } else {
             turn++;
-            if (!withOptimization) {
-                moveWithSimulation();
-            } else{
-                moveWithSimulationOptimized();
-            }
+            moveWithSimulationOptimized();
         }
-    }
-    private void moveWithSimulation() {
-        long solutionsGenerationTime = System.currentTimeMillis();
-        if(isLoggingPerfs) {
-            System.err.println("starting simulation time: " + (solutionsGenerationTime - startTime));
-        }
-        List<Solutionn> ssolutions = generatePopulation(GameCache.emptySolutions, GameParameters.depth, pod1, System.currentTimeMillis());
-        List<Solutionn> ssolutions2 = generatePopulation(GameCache.emptySolutions2, GameParameters.depth, pod2, System.currentTimeMillis());
-
-        if(lastSolution != null){
-            lastSolution.shift();
-            ssolutions.add(0, lastSolution);
-        }
-        if(lastSolution2 != null){
-            lastSolution2.shift();
-            ssolutions2.add(0, lastSolution2);
-        }
-        if(isLoggingPerfs) {
-            System.err.println("solutions generation duration: " + (System.currentTimeMillis() - solutionsGenerationTime));
-        }
-        Solutionn best = null;
-        Solutionn best2 = null;
-        double maxScore = -9999999;
-        double maxScore2 = -9999999;
-        System.err.println("x:" + pod1.position.x + " y:" + pod1.position.y + " vx:" +pod1.vx + " vy:" +pod1.vy+ " angle" + pod1.angle);
-
-        for (int i = 0; i < GameParameters.solutionNumber; i++) {
-            if(System.currentTimeMillis() - startTime > GameParameters.TIMEOUT_MAX){
-                if(isLoggingPerfs) {
-                    System.err.println("Breaked out of simulation loop at index: " + i);
-                }
-                break;
-            }
-            double score = ssolutions.get(i).score();
-            if (score > maxScore) {
-                best = ssolutions.get(i);
-                maxScore = score;
-            }
-            double score2 = ssolutions2.get(i).score();
-            if (score2 > maxScore2) {
-                best2 = ssolutions2.get(i);
-                maxScore2 = score2;
-            }
-        }
-        System.err.println("time: "+ ( System.currentTimeMillis() - startTime));
-        movePods(best, best2);
     }
 
     private void moveWithSimulationOptimized() {
@@ -274,23 +183,6 @@ public class Player {
         System.out.println(result.x + " " + result.y + " " + result.thrust);
     }
 
-    public List<Solutionn> generatePopulation(List<Solutionn> s, int depth, Pod pod, long methodStartTime) {
-        for(int i = 0; i < s.size(); i++) {
-            if(System.currentTimeMillis() - methodStartTime > GameParameters.SOLUTIONS_GENERATION_TIMEOUT) {
-                if(isLoggingPerfs) {
-                    System.err.println("Breaked out of solution generation at index: " + i);
-                }
-                break;
-            }
-            Solutionn solution = s.get(i);
-            solution.moves1.clear();
-            solution.setPod(pod);
-            for (int j = 0; j < depth; j++) {
-                solution.moves1.add(generatedMoves.get(MathUtils.rrandom(0, generatedMoves.size() - 1)));
-            }
-        }
-        return s;
-    }
     private List<Move> getEmptyMoveList(int depth){
         List<Move> moves = new ArrayList<>();
         for(int i = 0; i < depth; i++) {

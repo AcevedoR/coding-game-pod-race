@@ -40,7 +40,7 @@ public class Solutionn {
 
     public void replaceMovesWithRandom(int amplitude, int thrustRange) {
         for(Move move : moves1){
-            move.mutate(amplitude, thrustRange, MathUtils.rrandom(0, amplitude), MathUtils.rrandom(0, thrustRange + 1));
+            move.mutate(amplitude, thrustRange, MathUtils.rrandom(0, amplitude), MathUtils.rrandom(0, thrustRange));
         }
     }
 
