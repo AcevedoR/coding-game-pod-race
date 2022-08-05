@@ -26,6 +26,12 @@ public class Solutionn {
         this.moves1 = moves1;
         this.setPod(pod);
     }
+    public static Solutionn solutionCopyWithPodReference(Solutionn s){
+        Solutionn news = new Solutionn(s.pod, s.moves1);
+        news.moves1 = new ArrayList<>();
+        s.moves1.forEach(m -> news.moves1.add(new Move(m.angle, m.thrust)));
+        return news;
+    }
     public void setPod(Pod pod) {
         initialCurrentCheckpoint = pod.currentCheckpoint;
         this.pod = pod;
@@ -40,7 +46,7 @@ public class Solutionn {
 
     public void replaceMovesWithRandom(int amplitude, int thrustRange) {
         for(Move move : moves1){
-            move.mutate(amplitude, thrustRange, MathUtils.rrandom(0, amplitude), MathUtils.rrandom(0, thrustRange));
+            move.mutate(amplitude, thrustRange);
         }
     }
 
@@ -68,10 +74,11 @@ public class Solutionn {
             if (pod.checkNewCPAndUpdate(pod.position)) {
                 pod.passCheckpoint();
             }
+
             if(i == moves.size() - 1){
                 score = pod.score();
             } else {
-                score += pod.score() * 0.5 /GameParameters.depth * i;
+                score += pod.score() * 0.1 / (GameParameters.depth * i);
             }
         }
         return score;
@@ -91,6 +98,10 @@ public class Solutionn {
     void shift() {
         moves1.remove(0);
         moves1.add(Move.generate());
+    }
+
+    void mutate() {
+        moves1.get(MathUtils.rrandom(0, moves1.size()-1)).mutate(GameParameters.amplitube, GameParameters.speedR);
     }
 
     Pod simulateMove(int i){

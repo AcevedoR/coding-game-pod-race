@@ -112,7 +112,7 @@
 
         <repository>
             <snapshots>
-                <enabled />
+                <enabled>true</enabled>
             </snapshots>
             <name>Nexus Snapshots</name>
             <id>snapshots-repo</id>

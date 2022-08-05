@@ -23,7 +23,7 @@ public class PlayerTest {
     @Test
     public void play_ok_with_checkpoint_initialized() {
         GameCache.checkpointsList.add(new Checkpoint(0, new Point(1000, 500)));
-        player.startTime = System.currentTimeMillis();
+        player.startTime = System.currentTimeMillis()+500;
         player.isTesting = true;
         GameParameters.depth = 1;
 

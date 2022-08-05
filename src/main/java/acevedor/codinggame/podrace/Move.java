@@ -38,9 +38,14 @@ public class Move {
         this.thrust = (int) MathUtils.random(pmin, pmax);
     }
 
-    public void mutate(int amplitude, int speeRange, int amplitudeFactor, int speeRFactor){
+    public void mutate(int amplitude, int speedRange){
+        int amplitudeFactor = MathUtils.rrandom(0, amplitude);
+        int speeRFactor = MathUtils.rrandom(0, speedRange);
+        this.mutateInternal(amplitude, speedRange, amplitudeFactor, speeRFactor);
+    }
+    void mutateInternal(int amplitude, int speedRange, int amplitudeFactor, int speedRFactor){
         angle = (-18 + (39 / amplitude) * amplitudeFactor);
-        thrust = (int) (((double) GameConstants.MAX_THRUST / speeRange) * speeRFactor);
+        thrust = (int) (((double) GameConstants.MAX_THRUST / speedRange) * speedRFactor);
     }
 
     public static Move generate(){

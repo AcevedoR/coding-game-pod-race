@@ -13,6 +13,7 @@ public class Player {
     boolean isTesting = false;
     boolean debug=false;
     boolean isLoggingPerfs = true;
+    boolean isLoggingPositions = false;
     boolean withOptimization = true;
 
     int turn = 1;
@@ -105,62 +106,77 @@ public class Player {
         Solutionn currentSolution = new Solutionn(pod1, getEmptyMoveList(GameParameters.depth));
         Solutionn currentSolution2 = new Solutionn(pod2, getEmptyMoveList(GameParameters.depth));
 
+        boolean lastSolutionWasBetter = false;
+        boolean lastSolution2WasBetter = false;
         if(lastSolution != null){
+            lastSolution.setPod(pod1);
             lastSolution.shift();
         }
         if(lastSolution2 != null){
+            lastSolution2.setPod(pod2);
             lastSolution2.shift();
         }
-        if(isLoggingPerfs) {
-            System.err.println("solutions generation duration: " + (System.currentTimeMillis() - solutionsGenerationTime));
-        }
+
         Solutionn best = null;
         Solutionn best2 = null;
         double maxScore = -9999999;
         double maxScore2 = -9999999;
-        System.err.println("x:" + pod1.position.x + " y:" + pod1.position.y + " vx:" +pod1.vx + " vy:" +pod1.vy+ " angle" + pod1.angle);
-
+        if(isLoggingPositions) {
+            System.err.println("x:" + pod1.position.x + " y:" + pod1.position.y + " vx:" + pod1.vx + " vy:" + pod1.vy + " angle" + pod1.angle);
+        }
         int i= 0;
         while (true) {
-            if(System.currentTimeMillis() - startTime > GameParameters.TIMEOUT_MAX){
-                if(isLoggingPerfs) {
+            if ((System.currentTimeMillis() - startTime > GameParameters.TIMEOUT_MAX && !isTesting ) || (isTesting && i > 50000)) {
+                if (isLoggingPerfs) {
                     System.err.println("Breaked out of simulation loop at index: " + i);
                 }
                 break;
             }
             currentSolution.replaceMovesWithRandom(GameParameters.amplitube, GameParameters.speedR);
-            currentSolution.setPod(pod1);
             currentSolution2.replaceMovesWithRandom(GameParameters.amplitube, GameParameters.speedR);
-            currentSolution2.setPod(pod2);
 
             double score = currentSolution.score();
             if (score > maxScore) {
                 best = new Solutionn(currentSolution);
                 maxScore = score;
+                lastSolutionWasBetter = false;
             }
             double score2 = currentSolution2.score();
             if (score2 > maxScore2) {
                 best2 = new Solutionn(currentSolution2);
                 maxScore2 = score2;
+                lastSolution2WasBetter = false;
             }
 
-            /*if(this.lastSolution != null && this.lastSolution2 != null) {
+            /*if(this.lastSolution != null && this.lastSolution2 != null){
+                lastSolution.mutate();
+                lastSolution2.mutate();
                 double scoreLastMutated = lastSolution.score();
                 if (scoreLastMutated > maxScore) {
                     best = new Solutionn(lastSolution);
                     maxScore = scoreLastMutated;
+                    lastSolutionWasBetter = true;
                 }
                 double score2LastMutated = lastSolution2.score();
                 if (score2LastMutated > maxScore2) {
                     best2 = new Solutionn(lastSolution2);
                     maxScore2 = score2LastMutated;
+                    lastSolution2WasBetter = true;
                 }
             }*/
             i++;
         }
-        System.err.println("time: "+ ( System.currentTimeMillis() - startTime));
-        lastSolution = new Solutionn(currentSolution);
-        lastSolution2 = new Solutionn(currentSolution2);
+        if(isLoggingPerfs) {
+            System.err.println("time: " + (System.currentTimeMillis() - startTime));
+        }
+        lastSolution = new Solutionn(best);
+        lastSolution2 = new Solutionn(best2);
+        if(lastSolutionWasBetter) {
+            System.err.println("last solution was better");
+        }
+        if(lastSolution2WasBetter) {
+            System.err.println("last solution 2 was better");
+        }
         movePods(best, best2);
     }
 
@@ -169,8 +185,10 @@ public class Player {
         lastSolution = best;
         pod2.playy(best2.moves1.get(0));
         lastSolution2 = best2;
-        System.err.println("moving:"+ best.moves1.get(0));
-        System.err.println("x:" + pod1.position.x + " y:" + pod1.position.y + " vx:" +pod1.vx + " vy:" +pod1.vy+ " angle" + pod1.angle);
+        if(isLoggingPositions) {
+            System.err.println("moving:" + best.moves1.get(0));
+            System.err.println("x:" + pod1.position.x + " y:" + pod1.position.y + " vx:" + pod1.vx + " vy:" + pod1.vy + " angle" + pod1.angle);
+        }
         Point res = pod1.toResult();
         Point res2 = pod2.toResult();
         Result result = new Result((int) res.x, (int) res.y, best.moves1.get(0).thrust);

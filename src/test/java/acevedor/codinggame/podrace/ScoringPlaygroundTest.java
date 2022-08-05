@@ -15,7 +15,8 @@ public class ScoringPlaygroundTest {
         TestResult bestResult = null;
         TestInput bestInput = null;
         List<TestData> testDatas = new ArrayList<>();
-
+        
+        
         for (int i = 0; i < testInputs.size(); i++) {
             TestInput currentInput = testInputs.get(i);
             TestResult testResult = scoringPlaygroundTest.doXRepetitions(3, currentInput);
@@ -23,23 +24,35 @@ public class ScoringPlaygroundTest {
                 bestResult = testResult;
                 bestInput = currentInput;
             }
+            scoringPlaygroundTest.addTestData(testDatas, currentInput, testResult);
         }
         long totalDuration = System.currentTimeMillis() - startTime;
 
+        for (TestData test: testDatas) {
+            System.out.println(
+                    "\ninput: " + test.testInput +
+                            "\naverage turns: " + test.testResult.turns
+                            + "\nduration: " + test.testResult.duration / 1000 + " s"
+            );
+        }
         System.out.println(
-                "\nbest input: " + bestInput +
-                        "\naverage turns: " + bestResult.turns
-                        + "\nduration: " + bestResult.duration / 1000 + " s"
-                        + "\ntotal duration: " + totalDuration / 1000 + " s"
+        "\n=======\nbest input: " + bestInput +
+                "\naverage turns: " + bestResult.turns
+                + "\nduration: " + bestResult.duration / 1000 + " s"
+                + "\ntotal duration: " + totalDuration / 1000 + " s"
         );
     }
 
     private List<TestInput> getInputs() {
         return List.of(
-                new TestInput(18, 7, 5),
+                new TestInput(GameParameters.amplitube, GameParameters.speedR, GameParameters.depth)
+                ,
+                 new TestInput(18, 7, 5),
                 new TestInput(18, 8, 5),
-                new TestInput(14, 5, 5),
-                new TestInput(20, 4, 4)
+                new TestInput(30, 10, 4)
+                //,new TestInput(20, 4, 4),
+                //new TestInput(20, 4, 4),
+                //,new TestInput(24, 10, 4)
         );
     }
 
@@ -69,7 +82,7 @@ public class ScoringPlaygroundTest {
             playerEntity.setY(500);
 
             simulationEngine.playerCodingGame.debug = true;
-            simulationEngine.playerCodingGame.isTesting = true;
+            simulationEngine.playerCodingGame.isTesting = false;
 
             boolean firstPodDidOneCompleteTurn = false;
             boolean firstPodHasPassedFirstCheckpoint = false;
@@ -116,6 +129,14 @@ public class ScoringPlaygroundTest {
             this.turns = turns;
             this.duration = duration;
         }
+
+        @Override
+        public String toString() {
+            return "TestResult{" +
+                    "turns=" + turns +
+                    ", duration=" + duration +
+                    '}';
+        }
     }
 
     class TestData {
@@ -126,6 +147,17 @@ public class ScoringPlaygroundTest {
             this.testInput = testInput;
             this.testResult = testResult;
         }
+
+        @Override
+        public String toString() {
+            return "TestData{" +
+                    "testInput=" + testInput +
+                    ", testResult=" + testResult +
+                    '}';
+        }
+    }
+    void addTestData(List<TestData> list, TestInput i, TestResult r){
+        list.add(new TestData(i, r));
     }
 
     private static Entity spawn(String name, double x, double y) {

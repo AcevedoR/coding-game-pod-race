@@ -58,8 +58,8 @@ public class Pod {
         double dy = (p.y - this.position.y) / d;
 
         // Simple trigonometry. We multiply by 180.0 / PI to convert radiants to degrees.
-        double a = acos(dx) * 180.0 / PI;
-
+        //double a = acos(dx) * 180.0 / PI;// fix this is too slow
+        double a = acosApprox(dx) * 180.0 / PI;
         // If the point I want is below me, I have to shift the angle for it to be correct
         if (dy < 0) {
             a = 360.0 - a;
@@ -68,16 +68,10 @@ public class Pod {
         return a;
     }
 
-   /* public double getAngle(Point p2){
-        double dx = p2.x-this.position.x;
-        double dy = p2.y-this.position.y;
-        double angle = Math.atan2(dy, dx);
-        if (angle < 0) {
-            angle += 360;
-        }
-        return angle;
+    double acosApprox(double x) {
+        return (-0.69813170079773212 * x * x - 0.87266462599716477) * x + 1.5707963267948966;
     }
-*/
+
     double diffAngle(Point p) {
         double a = this.getAngle(p);
 
@@ -163,7 +157,8 @@ public class Pod {
         return checkpointPassedCount * 500000
                 - this.position.distance(currentCheckpoint.position)
                 - Math.abs(diffAngle(currentCheckpoint.position))
-                + MathUtils.speed(vx, vy) * 5;
+                //+ MathUtils.speed(vx, vy) * 0.3
+                ;
     }
 
     Point toResult() {
@@ -183,19 +178,14 @@ public class Pod {
     }
 
     public void udpate(int x, int y, int  vx, int vy, int angle, Checkpoint nextCheckpoint) {
-        System.err.println("simu xy: "+position+" real :"+x+ ","+y+" simuspeed:("+this.vx+","+this.vy+") real:("+vx+","+vy+")");
-        System.err.println("simu angle: "+this.angle+" real :"+angle);
-//        this.vx= (x - this.position.x) * 0.85;
-//        this.vy= (y - this.position.y) * 0.85;
+//        System.err.println("simu xy: "+position+" real :"+x+ ","+y+" simuspeed:("+this.vx+","+this.vy+") real:("+vx+","+vy+")");   to debug rounding errors
+//        System.err.println("simu angle: "+this.angle+" real :"+angle);
         this.vx = vx;
         this.vy = vy;
         this.position.x = x;
         this.position.y = y;
 
         this.currentCheckpoint = nextCheckpoint;
-//        double angle1 = getAngle(new Point(nextCheckPointX, nextCheckpointY));
-//        System.err.println("update, simu angle: "+angle+" real: "+angle1+ " input angle:"+nextCheckpointAngle);
-//        this.angle = nextCheckpointAngle;
         this.angle = angle;
     }
 

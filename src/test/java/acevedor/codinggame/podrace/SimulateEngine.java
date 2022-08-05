@@ -23,12 +23,12 @@ public class SimulateEngine {
             GameCache.checkpointsList.add(new Checkpoint(i, new Point(this.checkpoints.get(i).getX(), this.checkpoints.get(i).getY())));
         }
         playerCodingGame.init();
+        playerCodingGame.debug = true;
+        playerCodingGame.isTesting = true;
     }
 
 
     public Solutionn play() {
-        playerCodingGame.debug = true;
-        playerCodingGame.isTesting = true;
         playerCodingGame.init();
         playerCodingGame.startTime = System.currentTimeMillis();
         System.out.println("\n ================================================= ");
