@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Solutionn {
+    Double score = -1d;//optimization
+
     Checkpoint initialCurrentCheckpoint;
     Pod pod;
     int timeout;
@@ -46,7 +48,10 @@ public class Solutionn {
 
     public void replaceMovesWithRandom(int amplitude, int thrustRange) {
         for(Move move : moves1){
-            move.mutate(amplitude, thrustRange);
+//            move.mutateAngle(amplitude);
+//            move.mutateThust(thrustRange);// TODO
+            move.angle= (MathUtils.random(-18.0, 18.0));
+            move.thrust = MathUtils.rrandom(0, GameConstants.MAX_THRUST);
         }
     }
 
@@ -55,16 +60,15 @@ public class Solutionn {
             // solution is not initialized
             return -9999999;
         }
-        // Play out the turns
-        // Apply the moves to the pods before playing
-        double score = simulateMoves(moves1);
-
-//        double result = pod.score();
-        double result = score;
+        if (score != -1){
+            return score;
+        }
+        double result = simulateMoves(moves1);
 
         // Reset everyone to their initial states
         reset();
-        return result;
+        score = result;
+        return score;
     }
 
     private double simulateMoves(List<Move> moves) {
@@ -93,6 +97,7 @@ public class Solutionn {
         pod.vx = vx;
         pod.vy = vy;
         pod.checkpointPassedCount = checkpointPassedCount;
+        score = -1d;
     }
 
     void shift() {
@@ -100,8 +105,13 @@ public class Solutionn {
         moves1.add(Move.generate());
     }
 
-    void mutate() {
-        moves1.get(MathUtils.rrandom(0, moves1.size()-1)).mutate(GameParameters.amplitube, GameParameters.speedR);
+    void mutate(int simulationTurn) {
+        Move moves = moves1.get(MathUtils.rrandom(0, moves1.size() - 1));
+        if(MathUtils.randomBoolean()) {
+            moves.mutateAngle(GameParameters.amplitube, simulationTurn);
+        } else {
+            moves.mutateThust(GameParameters.speedR, simulationTurn);
+        }
     }
 
     Pod simulateMove(int i){
@@ -111,9 +121,31 @@ public class Solutionn {
         return new Pod(pod);
     }
 
+    public static double replaceLowestSolution(List<Solutionn> solutions, Solutionn newSolution){
+        if(solutions.size() != GameParameters.mutation_population){
+            throw new IllegalArgumentException("there should be always the same number of population, actual: " + solutions.size());
+        }
+        if(newSolution.score() > solutions.get(solutions.size() - 1).score()) {
+            solutions.remove(solutions.size() - 1);
+            solutions.add(newSolution);
+            sortSolutions(solutions);
+        }
+        return solutions.get(solutions.size()-1).score();
+    }
+
+    public static Solutionn getBestSolution(List<Solutionn> solutions){
+        return sortSolutions(solutions).get(0);
+    }
+
+    public static List<Solutionn> sortSolutions(final List<Solutionn> solutions) {
+        solutions.sort((a, b) -> (int) (b.score() - a.score()));
+        return solutions;
+    }
+
     @Override
     public String toString() {
         return "Solution{" +
+                ", score=" + score +
                 ", initialCurrentCheckpoint=" + initialCurrentCheckpoint +
                 ", pod=" + pod +
                 ", timeout=" + timeout +

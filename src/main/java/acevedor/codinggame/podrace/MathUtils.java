@@ -14,6 +14,10 @@ public class MathUtils {
         return ThreadLocalRandom.current().nextInt(max - min + 1) + min;
     }
 
+    public static boolean randomBoolean() {
+        return java.util.concurrent.ThreadLocalRandom.current().nextBoolean();
+    }
+
     public static int clamp(double x, int min, int max){
         if(x > max){
             return max;

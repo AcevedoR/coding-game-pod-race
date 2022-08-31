@@ -75,5 +75,37 @@ public class SolutionTest {
                 .isLessThan(goodSolutionMaxAngle.score());
     }
 
+    @Test
+    public void replaceLowest_ok(){
+        GameParameters.mutation_population = 1;
+        List<Solutionn> solutionns = new ArrayList<>();
+        Solutionn worstSolution = new Solutionn(pod, List.of());
+        worstSolution.score = 1d;
+        solutionns.add(worstSolution);
+
+        // when
+        Solutionn bestSolution = new Solutionn(pod, List.of());
+        bestSolution.score = 22d;
+        Solutionn.replaceLowestSolution(solutionns, bestSolution);
+
+        // then
+        assertThat(solutionns).containsExactly(bestSolution);
+    }
+    @Test
+    public void doNot_replace_Highest(){
+        GameParameters.mutation_population = 1;
+        List<Solutionn> solutionns = new ArrayList<>();
+        Solutionn bestSolution = new Solutionn(pod, List.of());
+        bestSolution.score = 22d;
+        solutionns.add(bestSolution);
+
+        // when
+        Solutionn worstSolution = new Solutionn(pod, List.of());
+        worstSolution.score = 1d;
+        Solutionn.replaceLowestSolution(solutionns, worstSolution);
+
+        // then
+        assertThat(solutionns).containsExactly(bestSolution);
+    }
 
 }

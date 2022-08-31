@@ -157,7 +157,7 @@ public class Pod {
         return checkpointPassedCount * 500000
                 - this.position.distance(currentCheckpoint.position)
                 - Math.abs(diffAngle(currentCheckpoint.position))
-                //+ MathUtils.speed(vx, vy) * 0.3
+                + MathUtils.speed(vx, vy) * 0.3
                 ;
     }
 

@@ -4,12 +4,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 
+import static acevedor.codinggame.podrace.Solutionn.getBestSolution;
+import static acevedor.codinggame.podrace.Solutionn.replaceLowestSolution;
+
 /**
  * Auto-generated code below aims at helping you parse
  * the standard input according to the problem statement.
  **/
 public class Player {
-
     boolean isTesting = false;
     boolean debug=false;
     boolean isLoggingPerfs = true;
@@ -22,6 +24,7 @@ public class Player {
     long startTime;
     Solutionn lastSolution = null;
     Solutionn lastSolution2 = null;
+    int numberOfSuccessfulMutations = 0;
 
     public static void main(String args[]) {
         Player player = new Player();
@@ -102,82 +105,78 @@ public class Player {
         if(isLoggingPerfs) {
             System.err.println("starting simulation time: " + (solutionsGenerationTime - startTime));
         }
+        List<Solutionn> bestEvolvedSolutions = new ArrayList<>();
+        List<Solutionn> bestEvolvedSolutions2 = new ArrayList<>();
 
-        Solutionn currentSolution = new Solutionn(pod1, getEmptyMoveList(GameParameters.depth));
-        Solutionn currentSolution2 = new Solutionn(pod2, getEmptyMoveList(GameParameters.depth));
-
-        boolean lastSolutionWasBetter = false;
-        boolean lastSolution2WasBetter = false;
+        // to handle first turn
         if(lastSolution != null){
             lastSolution.setPod(pod1);
             lastSolution.shift();
-        }
-        if(lastSolution2 != null){
+            lastSolution.reset();
+            bestEvolvedSolutions.add(lastSolution);
+
             lastSolution2.setPod(pod2);
             lastSolution2.shift();
+            lastSolution2.reset();
+            bestEvolvedSolutions2.add(lastSolution2);
+        } else {
+            bestEvolvedSolutions.add(getRandomSolution(pod1));
+            bestEvolvedSolutions2.add(getRandomSolution(pod2));
         }
 
-        Solutionn best = null;
-        Solutionn best2 = null;
-        double maxScore = -9999999;
-        double maxScore2 = -9999999;
+        // fill the rest with random
+        for (int i = 0; i < GameParameters.mutation_population - 1; i++) {
+            bestEvolvedSolutions.add(getRandomSolution(pod1));
+            bestEvolvedSolutions2.add(getRandomSolution(pod2));
+        }
+
+        double minScore = -9999999;
+        double minScore2 = -9999999;
         if(isLoggingPositions) {
             System.err.println("x:" + pod1.position.x + " y:" + pod1.position.y + " vx:" + pod1.vx + " vy:" + pod1.vy + " angle" + pod1.angle);
         }
         int i= 0;
         while (true) {
-            if ((System.currentTimeMillis() - startTime > GameParameters.TIMEOUT_MAX && !isTesting ) || (isTesting && i > 50000)) {
+            if ((System.currentTimeMillis() - startTime > GameParameters.TIMEOUT_MAX && !isTesting) || (isTesting && i > 50000)) {
                 if (isLoggingPerfs) {
                     System.err.println("Breaked out of simulation loop at index: " + i);
                 }
                 break;
             }
-            currentSolution.replaceMovesWithRandom(GameParameters.amplitube, GameParameters.speedR);
-            currentSolution2.replaceMovesWithRandom(GameParameters.amplitube, GameParameters.speedR);
+
+            Solutionn currentSolution = new Solutionn(bestEvolvedSolutions.get(MathUtils.rrandom(0, bestEvolvedSolutions.size()-1)));
+            currentSolution.mutate(i);
+
+            Solutionn currentSolution2 = new Solutionn(bestEvolvedSolutions2.get(MathUtils.rrandom(0, bestEvolvedSolutions2.size()-1)));
+            currentSolution2.mutate(i);
 
             double score = currentSolution.score();
-            if (score > maxScore) {
-                best = new Solutionn(currentSolution);
-                maxScore = score;
-                lastSolutionWasBetter = false;
-            }
-            double score2 = currentSolution2.score();
-            if (score2 > maxScore2) {
-                best2 = new Solutionn(currentSolution2);
-                maxScore2 = score2;
-                lastSolution2WasBetter = false;
+            if (score > minScore) {
+                minScore = Solutionn.replaceLowestSolution(bestEvolvedSolutions, currentSolution);
+                numberOfSuccessfulMutations++;
             }
 
-            /*if(this.lastSolution != null && this.lastSolution2 != null){
-                lastSolution.mutate();
-                lastSolution2.mutate();
-                double scoreLastMutated = lastSolution.score();
-                if (scoreLastMutated > maxScore) {
-                    best = new Solutionn(lastSolution);
-                    maxScore = scoreLastMutated;
-                    lastSolutionWasBetter = true;
-                }
-                double score2LastMutated = lastSolution2.score();
-                if (score2LastMutated > maxScore2) {
-                    best2 = new Solutionn(lastSolution2);
-                    maxScore2 = score2LastMutated;
-                    lastSolution2WasBetter = true;
-                }
-            }*/
+            double score2 = currentSolution2.score();
+            if (score2 > minScore2) {
+                minScore2 = Solutionn.replaceLowestSolution(bestEvolvedSolutions2, currentSolution2);
+            }
             i++;
         }
         if(isLoggingPerfs) {
             System.err.println("time: " + (System.currentTimeMillis() - startTime));
         }
+
+        Solutionn best = Solutionn.getBestSolution(bestEvolvedSolutions);
+        Solutionn best2 = Solutionn.getBestSolution(bestEvolvedSolutions2);
         lastSolution = new Solutionn(best);
         lastSolution2 = new Solutionn(best2);
-        if(lastSolutionWasBetter) {
-            System.err.println("last solution was better");
-        }
-        if(lastSolution2WasBetter) {
-            System.err.println("last solution 2 was better");
-        }
         movePods(best, best2);
+    }
+
+    private Solutionn getRandomSolution(final Pod pod1) {
+        Solutionn randomsolution = new Solutionn(pod1, getEmptyMoveList(GameParameters.depth));
+        randomsolution.replaceMovesWithRandom(GameParameters.amplitube, GameParameters.speedR);
+        return randomsolution;
     }
 
     private void movePods(final Solutionn best, final Solutionn best2) {

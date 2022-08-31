@@ -3,6 +3,7 @@ package acevedor.codinggame.podrace;
 import java.util.List;
 
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import static java.lang.Math.round;
@@ -49,6 +50,38 @@ public class PlayerTest {
         assertThat(player.pod1.vx)
                 .isEqualTo(100*0.85);
         assertThat(player.pod1.vy)
+                .isEqualTo(0);
+    }
+
+    @Test
+    public void play_ok_with_checkpoint_initialized_pod2() {
+        GameCache.checkpointsList.add(new Checkpoint(0, new Point(1000, 500)));
+        player.startTime = System.currentTimeMillis()+500;
+        player.isTesting = true;
+        GameParameters.depth = 1;
+
+        player.applyInput(
+                500, 500, 0, 0, 0, 0,
+                500, 500, 0, 0, 0, 0
+        );
+        player.play();
+
+        assertThat(player.pod2.position.x)
+                .isGreaterThan(500);
+        assertThat(player.pod2.position.y)
+                .isEqualTo(500);
+        assertThat(player.pod2.vx)
+                .isEqualTo(100*0.85);
+        assertThat(player.pod2.vy)
+                .isEqualTo(0);
+
+        assertThat(player.pod2.position.x)
+                .isGreaterThan(200);
+        assertThat(player.pod2.position.y)
+                .isEqualTo(500);
+        assertThat(player.pod2.vx)
+                .isEqualTo(100*0.85);
+        assertThat(player.pod2.vy)
                 .isEqualTo(0);
     }
 
