@@ -106,12 +106,8 @@ public class Solutionn {
     }
 
     void mutate(int simulationTurn) {
-        Move moves = moves1.get(MathUtils.rrandom(0, moves1.size() - 1));
-        if(MathUtils.randomBoolean()) {
-            moves.mutateAngle(GameParameters.amplitube, simulationTurn);
-        } else {
-            moves.mutateThust(GameParameters.speedR, simulationTurn);
-        }
+        Move move = moves1.get(MathUtils.rrandom(0, moves1.size() - 1));
+        move.mutate(simulationTurn);
     }
 
     Pod simulateMove(int i){

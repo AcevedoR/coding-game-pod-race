@@ -9,35 +9,14 @@ public class Move {
         this.thrust = thrust;
     }
 
-    /*void mutate(double angleMutationStep) {
-        double ramin = this.angle - 36.0 * angleMutationStep;
-        double ramax = this.angle + 36.0 * angleMutationStep;
-
-        if (ramin < -18.0) {
-            ramin = -18.0;
+    public void mutate(int mutationGeneration){
+        if(MathUtils.randomBoolean()) {
+            mutateAngle(GameParameters.amplitube, mutationGeneration);
+        } else {
+            mutateThust(GameParameters.speedR, mutationGeneration);
         }
-
-        if (ramax > 18.0) {
-            ramax = 18.0;
-        }
-
-        angle = MathUtils.random(ramin, ramax);
-
-
-        int pmin = (int) (this.thrust - 200 * angleMutationStep);
-        int pmax = (int) (this.thrust + 200 * angleMutationStep);
-
-        if (pmin < 0) {
-            pmin = 0;
-        }
-
-        if (pmax > 0) {
-            pmax = 200;
-        }
-
-        this.thrust = (int) MathUtils.random(pmin, pmax);
     }
-*/
+
     public void mutateAngle(int angleMutationStep, int simulationTurn){
             double precision = 1;
             if(simulationTurn < 10000){
